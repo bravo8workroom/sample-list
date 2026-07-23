@@ -563,7 +563,13 @@ class Component extends DCLogic {
       ]);
       let subs=null, phs=null;
       if(authed){ const [su,ph]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}) ]); subs=su.data; phs=ph.data; }
-      const patch={ products:this._buildProducts(pr.data, ct.data, subs, phs) };
+      let products=this._buildProducts(pr.data, ct.data, subs, phs);
+      // 편집 중인 상품은 서버값으로 덮어쓰지 않는다 — 실시간 자기-에코 reload가
+      // 입력 중이거나 아직 저장 전(persist 500ms 디바운스)인 글자를 지워버리는 버그 방지.
+      const eid=this.state.editId;
+      if(eid){ const local=(this.state.products||[]).find(p=>p.id===eid);
+        if(local) products=products.some(p=>p.id===eid)?products.map(p=>p.id===eid?local:p):[local,...products]; }
+      const patch={ products };
       if(se.data){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
       this.setState(patch);
     }catch(e){ console.error('reload', e); }
