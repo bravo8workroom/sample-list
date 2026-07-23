@@ -215,6 +215,23 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           </div>
         </div>
         <textarea value="{{ p.desc }}" onChange="{{ p.setDesc }}" placeholder="{{ p.descPh }}" rows="3" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
+        <div style="display:flex;flex-direction:column;gap:10px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
+          <span style="font-size:12.5px;color:#171717;font-weight:700">참고 시안 이미지 <span style="color:#b3b3af;font-weight:400">· 신청 창에서 고객에게 보여줄 시안 사진 · 있을 때만 표시되고, 고객이 클릭하면 크게 볼 수 있어요</span></span>
+          <sc-if value="{{ p.hasRefImgs }}">
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <sc-for list="{{ p.refImgs }}" as="im" hint-placeholder-count="0">
+                <div style="position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;border:1px solid #e3e3e0">
+                  <img src="{{ im.url }}" style="width:100%;height:100%;object-fit:cover">
+                  <button onClick="{{ im.del }}" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(23,23,23,.75);color:#fff;font-size:11px;line-height:1;cursor:pointer">✕</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:flex;gap:10px;align-items:stretch">
+            <div tabIndex="0" onPaste="{{ p.refPaste }}" onDrop="{{ p.refDrop }}" onDragOver="{{ p.refDragOver }}" style="flex:1;border:1.5px dashed #d4d4d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;color:#8a8a86;font-size:12.5px;cursor:text;outline:none;text-align:center" style-focus="border-color:#171717;color:#171717">여기를 클릭한 뒤 Ctrl+V 로 붙여넣기 (여러 장·드래그도 가능)</div>
+            <label style="display:flex;align-items:center;justify-content:center;border:1px solid #d4d4d0;border-radius:10px;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717"><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ p.refFile }}" style="display:none">파일 선택</label>
+          </div>
+        </div>
         <div style="display:flex;flex-direction:column;gap:14px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
           <span style="font-size:12.5px;color:#171717;font-weight:700">고객 입력 항목 — 고객이 선택할 때 함께 적습니다</span>
           <div style="display:flex;flex-direction:column;gap:7px">
@@ -239,23 +256,6 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           </div>
         </div>
         <textarea value="{{ p.guide }}" onChange="{{ p.setGuide }}" placeholder="{{ p.guidePh }}" rows="2" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
-        <div style="display:flex;flex-direction:column;gap:10px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
-          <span style="font-size:12.5px;color:#171717;font-weight:700">참고 시안 이미지 <span style="color:#b3b3af;font-weight:400">· 신청 창에서 고객에게 보여줄 시안 사진 · 있을 때만 표시되고, 고객이 클릭하면 크게 볼 수 있어요</span></span>
-          <sc-if value="{{ p.hasRefImgs }}">
-            <div style="display:flex;flex-wrap:wrap;gap:10px">
-              <sc-for list="{{ p.refImgs }}" as="im" hint-placeholder-count="0">
-                <div style="position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;border:1px solid #e3e3e0">
-                  <img src="{{ im.url }}" style="width:100%;height:100%;object-fit:cover">
-                  <button onClick="{{ im.del }}" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(23,23,23,.75);color:#fff;font-size:11px;line-height:1;cursor:pointer">✕</button>
-                </div>
-              </sc-for>
-            </div>
-          </sc-if>
-          <div style="display:flex;gap:10px;align-items:stretch">
-            <div tabIndex="0" onPaste="{{ p.refPaste }}" onDrop="{{ p.refDrop }}" onDragOver="{{ p.refDragOver }}" style="flex:1;border:1.5px dashed #d4d4d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;color:#8a8a86;font-size:12.5px;cursor:text;outline:none;text-align:center" style-focus="border-color:#171717;color:#171717">여기를 클릭한 뒤 Ctrl+V 로 붙여넣기 (여러 장·드래그도 가능)</div>
-            <label style="display:flex;align-items:center;justify-content:center;border:1px solid #d4d4d0;border-radius:10px;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717"><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ p.refFile }}" style="display:none">파일 선택</label>
-          </div>
-        </div>
         <div style="display:flex;flex-direction:column;gap:10px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
           <span style="font-size:12.5px;color:#171717;font-weight:700">공개 대상 인스타 아이디 <span style="color:#b3b3af;font-weight:400">· 특정 아이디만 추가하면 그 사람만 신청할 수 있어요 · 추가하지 않으면 누구나 신청 가능</span></span>
           <sc-if value="{{ p.hasAllow }}">
@@ -558,20 +558,6 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             </sc-for>
           </div>
         </sc-if>
-        <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #eeeeec;padding-top:13px">
-          <span style="font-size:11.5px;color:#8a8a86;font-weight:700">{{ draftLabel }} <span style="color:#b3b3af;font-weight:400">· {{ draftIntro }}</span></span>
-          <label onDrop="{{ cDrop }}" onDragOver="{{ cDragOver }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1.5px dashed #d4d4d0;border-radius:12px;padding:18px 16px;text-align:center;cursor:pointer" style-hover="border-color:#171717"><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ cStage }}" style="display:none"><span style="font-size:22px;line-height:1;color:#8a8a86">＋</span><span style="font-size:13.5px;font-weight:600;color:#3d3d3a">{{ uPickLabel }}</span><span style="font-size:11.5px;color:#b3b3af">{{ uPickSub }}</span></label>
-          <sc-if value="{{ hasCStage }}">
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-              <sc-for list="{{ cStageThumbs }}" as="t" hint-placeholder-count="0">
-                <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f0f0ee">
-                  <img src="{{ t.url }}" style="width:100%;height:100%;object-fit:cover;display:block">
-                  <button onClick="{{ t.remove }}" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border:none;border-radius:999px;background:rgba(23,23,23,.72);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-                </div>
-              </sc-for>
-            </div>
-          </sc-if>
-        </div>
         <sc-if value="{{ showLegacyCopy }}">
         <div style="display:flex;flex-direction:column;gap:8px;background:#f7f7f5;border:1px solid #e3e3e0;border-radius:9px;padding:11px 12px">
           <div style="font-size:11.5px;color:#8a8a86;font-weight:600">{{ copyFormLabel }}</div>
@@ -1128,11 +1114,6 @@ class Component extends DCLogic {
       })();
     };
     const uStageThumbs=(st.ustage||[]).map(item=>({ url:item.url, remove:()=>this.setState(s=>{ const it=(s.ustage||[]).find(x=>x.sid===item.sid); if(it) URL.revokeObjectURL(it.url); return {ustage:(s.ustage||[]).filter(x=>x.sid!==item.sid)}; }) }));
-    const cStageFiles=list=>{ const files=Array.from(list||[]).filter(f=>f.type&&f.type.indexOf('image')===0); if(!files.length) return; const add=files.map(f=>({sid:'ct'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),file:f,url:URL.createObjectURL(f)})); this.setState(s=>({cstage:[...(s.cstage||[]),...add],cErr:''})); };
-    const cStage=e=>{ const files=Array.from(e.target.files||[]); e.target.value=''; cStageFiles(files); };
-    const cDrop=e=>{ e.preventDefault(); cStageFiles((e.dataTransfer||{}).files); };
-    const cDragOver=e=>e.preventDefault();
-    const cStageThumbs=(st.cstage||[]).map(item=>({ url:item.url, remove:()=>this.setState(s=>{ const it=(s.cstage||[]).find(x=>x.sid===item.sid); if(it) URL.revokeObjectURL(it.url); return {cstage:(s.cstage||[]).filter(x=>x.sid!==item.sid)}; }) }));
 
     const isInstaId=s=>/^@|^[a-z0-9._]+$/i.test((s||'').trim());
     const safeName=s=>String(s||'').replace(/[\\/:*?"<>|]+/g,'').replace(/^@/,'').trim()||'무제';
@@ -1280,7 +1261,6 @@ class Component extends DCLogic {
       backToList:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({editId:null}); },
       claimOpen:!!st.claiming, claimTitle, copyText, copyClaim, guideText, hasGuide:!!guideText, claimRefImgs, hasClaimRef:claimRefImgs.length>0, claimRefLabel:L.draftAdmin, closeClaim:()=>{ (this.state.cstage||[]).forEach(s=>URL.revokeObjectURL(s.url)); this.setState({claiming:null,cErr:'',cship:{},copt:{},csizes:[],cstage:[]}); },
       claimMulti, claimSizeOptions,
-      draftLabel:L.draftLabel, draftIntro:L.draftIntro, cStage, cDrop, cDragOver, cStageThumbs, hasCStage:cStageThumbs.length>0,
       claimShipFields, hasClaimShip:claimShipFields.length>0, claimOptGroups, hasClaimOpt:claimOptGroups.length>0, showLegacyCopy:!!st.claiming&&!claimMulti&&claimShipFields.length===0&&claimOptGroups.length===0,
       cname:st.cname, cKey:e=>{ if(e.key==='Enter') confirmClaim(); },
       setCname:e=>{ const v=e.target.value; this.setState(s=>{ let cship=s.cship||{}; const key=v.trim().toLowerCase(); if(key&&s.claiming){ const p=s.products.find(x=>x.id===s.claiming.pid); if(p){ const prev=(p.sizes||[]).flatMap(sz=>sz.claims||[]).filter(c=>(c.buyer||'').trim().toLowerCase()===key).sort((a,b)=>b.at-a.at)[0]; if(prev&&prev.ship){ const merged={...prev.ship}; Object.keys(cship).forEach(k=>{ if(cship[k]) merged[k]=cship[k]; }); cship=merged; } } } return {cname:v,cErr:'',cship}; }); },
