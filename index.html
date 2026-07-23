@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -117,7 +118,8 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
     <div data-screen-label="관리자 로그인" style="max-width:360px;margin:0 auto;padding:110px 24px">
       <div style="background:#fff;border:1px solid #e3e3e0;border-radius:14px;padding:30px;display:flex;flex-direction:column;gap:14px">
         <div style="font-size:17px;font-weight:600">관리자 로그인</div>
-        <input type="password" value="{{ pw }}" onChange="{{ setPw }}" onKeyDown="{{ pwKey }}" placeholder="비밀번호" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 13px;font-size:14px;outline:none" style-focus="border-color:#171717">
+        <input type="email" value="{{ pwEmail }}" onChange="{{ setPwEmail }}" onKeyDown="{{ pwKey }}" placeholder="이메일" autocomplete="username" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 13px;font-size:14px;outline:none" style-focus="border-color:#171717">
+        <input type="password" value="{{ pw }}" onChange="{{ setPw }}" onKeyDown="{{ pwKey }}" placeholder="비밀번호" autocomplete="current-password" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 13px;font-size:14px;outline:none" style-focus="border-color:#171717">
         <sc-if value="{{ hasPwErr }}"><div style="color:#171717;font-size:12.5px">{{ pwErr }}</div></sc-if>
         <button onClick="{{ login }}" style="background:#171717;color:#fff;border:none;border-radius:9px;padding:12px;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#3d3d3a">확인</button>
       </div>
@@ -532,27 +534,58 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;adminPw&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;tjdrhd87&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;설정&quot;},&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, editLang:'ko', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.',email1:'',email2:''}, ci:{}, urls:{}, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko' };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.',email1:'',email2:''}, ci:{}, urls:{}, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko' };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
   setSettingsTr(lang,field,value){ if(lang==='ko'){ this.persistSettings({[field]:value}); return; } const tr={...(this.state.settings.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; this.persistSettings({tr}); }
+  // ===== Supabase 연동 =====
+  _sb(){ if(!this.__sb) this.__sb=window.supabase.createClient('https://zoszumqphwfniankrgio.supabase.co','sb_publishable_zRj6dXRMQ6RJ0hQygLnF1Q_dWy9T9M6'); return this.__sb; }
+  _k(){ return 'sz'+Math.random().toString(36).slice(2,9); }
+  _photoUrl(path){ if(!path) return ''; try{ return this._sb().storage.from('sample-photos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; } }
+  _docOf(p){ const { gallery, id, ...rest }=p; return { ...rest, sizes:(p.sizes||[]).map(s=>{ const { claims, ...sr }=s; return { ...sr, key:s.key||this._k() }; }) }; }
+  _buildProducts(rows, counts, subs, phs){
+    const cmap={}; (counts||[]).forEach(c=>{ (cmap[c.product_id]=cmap[c.product_id]||{})[c.size_key]=c.claimed; });
+    const smap={}; (subs||[]).forEach(s=>{ const k=s.product_id+'|'+s.size_key; (smap[k]=smap[k]||[]).push({ buyer:s.buyer, at:new Date(s.created_at).getTime(), ship:s.ship||{}, opt:s.opt||{} }); });
+    const gmap={}; (phs||[]).forEach(g=>{ (gmap[g.product_id]=gmap[g.product_id]||[]).push({ key:g.id, url:this._photoUrl(g.path), buyer:g.buyer, size:g.size, msg:g.msg, name:g.filename, type:g.mime, bytes:g.bytes, at:new Date(g.created_at).getTime(), sent:g.sent, path:g.path }); });
+    return (rows||[]).map(r=>{ const p={ ...(r.doc||{}), id:r.id }; p.sizes=(p.sizes||[]).map(s=>{ const key=s.key; const real=smap[r.id+'|'+key]; const claimed=(cmap[r.id]||{})[key]||0; return { ...s, claims: real || Array.from({length:claimed},()=>({buyer:'',at:0,ship:{},opt:{}})) }; }); p.gallery=gmap[r.id]||[]; return p; });
+  }
+  async _reload(force){
+    const authed = force!=null ? force : this.state.authed;
+    try{
+      const sb=this._sb();
+      const [pr,ct,se]=await Promise.all([
+        sb.from('products').select('*').order('sort',{ascending:true}),
+        sb.from('size_counts').select('*'),
+        sb.from('settings').select('*').eq('id',1).maybeSingle()
+      ]);
+      let subs=null, phs=null;
+      if(authed){ const [su,ph]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}) ]); subs=su.data; phs=ph.data; }
+      const patch={ products:this._buildProducts(pr.data, ct.data, subs, phs) };
+      if(se.data){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
+      this.setState(patch);
+    }catch(e){ console.error('reload', e); }
+  }
+  _resubscribe(){ const sb=this._sb(); if(this.__ch){ try{ sb.removeChannel(this.__ch); }catch(e){} this.__ch=null; } const deb=()=>{ clearTimeout(this.__rt); this.__rt=setTimeout(()=>this._reload(), 250); }; this.__ch=sb.channel('sm').on('postgres_changes',{event:'*',schema:'public',table:'products'},deb).on('postgres_changes',{event:'*',schema:'public',table:'size_counts'},deb).on('postgres_changes',{event:'*',schema:'public',table:'submissions'},deb).on('postgres_changes',{event:'*',schema:'public',table:'photos'},deb).subscribe(); }
   componentDidMount(){
-    let saved=null, set=null;
-    try{ saved=JSON.parse(localStorage.getItem('sm-products-v1')||'null'); }catch(e){}
-    try{ set=JSON.parse(localStorage.getItem('sm-settings-v1')||'null'); }catch(e){}
-    if(set && typeof set==='object') this.setState({settings:{...this.state.settings,...set}});
     try{ const v=localStorage.getItem('sm-viewer-v1'); if(v) this.setState({viewer:v}); }catch(e){}
     try{ const lg=localStorage.getItem('sm-lang-v1'); if(lg) this.setState({lang:lg}); }catch(e){}
-    if(saved && Array.isArray(saved)) this.setState({products:saved});
-    else this.persist([{id:'demo1',name:'샘플 상품 예시',desc:'관리자 페이지에서 사진을 붙여넣고 설명·수량·마감일을 수정할 수 있어요.',copyForm:'[샘플신청] {상품} / {옵션} / {아이디}',images:[],sizes:[{label:'S',qty:1,claims:[]},{label:'M',qty:2,claims:[]},{label:'L',qty:1,claims:[]}],deadline:'',perPerson:1,closed:false}]);
+    this._reload();
+    this._resubscribe();
+    this._sb().auth.onAuthStateChange((_e,session)=>{ const authed=!!session; this.setState({authed}); this._resubscribe(); this._reload(authed); });
   }
   persist(products){
+    const prev=this.state.products||[];
     this.setState({products});
-    try{ localStorage.setItem('sm-products-v1', JSON.stringify(products)); }
-    catch(e){ this.flash('저장 공간이 부족합니다 — 사진 수를 줄여주세요'); }
+    const removed=prev.filter(p=>!products.some(x=>x.id===p.id)).map(p=>p.id);
+    if(removed.length) this._sb().from('products').delete().in('id',removed).then(({error})=>{ if(error) this.flash('삭제 실패: '+error.message); });
+    clearTimeout(this.__ps);
+    this.__ps=setTimeout(()=>{
+      const rows=(this.state.products||[]).map((p,i)=>({ id:p.id, doc:this._docOf(p), sort:i }));
+      if(rows.length) this._sb().from('products').upsert(rows).then(({error})=>{ if(error) this.flash('저장 실패: '+error.message); });
+    }, 500);
   }
   persistViewer(v){ this.setState({viewer:v,vErr:''}); try{ if(v) localStorage.setItem('sm-viewer-v1',v); else localStorage.removeItem('sm-viewer-v1'); }catch(e){} }
   persistLang(l){ this.setState({lang:l}); try{ localStorage.setItem('sm-lang-v1',l); }catch(e){} }
@@ -565,7 +598,11 @@ class Component extends DCLogic {
   persistSettings(patch){
     const settings={...this.state.settings,...patch};
     this.setState({settings});
-    try{ localStorage.setItem('sm-settings-v1', JSON.stringify(settings)); }catch(e){}
+    clearTimeout(this.__pss);
+    this.__pss=setTimeout(()=>{
+      const s=this.state.settings;
+      this._sb().from('settings').upsert({ id:1, title:s.title||'', subtitle:s.subtitle||'', email1:s.email1||'', email2:s.email2||'', w3key:s.w3key||'', admin_ids:s.adminIds||'', tr:s.tr||{} }).then(({error})=>{ if(error) this.flash('설정 저장 실패'); });
+    }, 500);
   }
   upd(id,patch){ this.persist(this.state.products.map(p=>p.id===id?{...p,...(typeof patch==='function'?patch(p):patch)}:p)); }
   flash(msg){ this.setState({toast:msg}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:''}),2800); }
@@ -685,7 +722,7 @@ class Component extends DCLogic {
   }
   setCi(id,fn){ const cur=this.state.ci[id]||0; this.setState({ci:{...this.state.ci,[id]:fn(cur)}}); }
   renderVals(){
-    const st=this.state, adminPw=this.props.adminPw??'1234', showRemaining=this.props.showRemaining??true;
+    const st=this.state, showRemaining=this.props.showRemaining??true;
     const el=st.editLang||'ko';
     const T=this.i18n(); const L=T[st.lang]||T.ko;
     const baseBtn={display:'inline-flex',alignItems:'center',background:'#fff',border:'1px solid #d4d4d0',borderRadius:'999px',padding:'8px 14px',fontSize:'13px',fontWeight:600,color:'#171717',cursor:'pointer'};
@@ -754,7 +791,7 @@ class Component extends DCLogic {
         drop:e=>{ e.preventDefault(); Array.from((e.dataTransfer&&e.dataTransfer.files)||[]).forEach(f=>this.readImg(f,url=>this.upd(p.id,pp=>({images:[...(pp.images||[]),url]})))); },
         dragOver:e=>e.preventDefault(),
         file:e=>{ Array.from(e.target.files||[]).forEach(f=>this.readImg(f,url=>this.upd(p.id,pp=>({images:[...(pp.images||[]),url]})))); e.target.value=''; },
-        bulkAdd:()=>{ const txt=window.prompt('옵션을 붙여넣으세요. 줄바꿈 또는 쉼표로 구분합니다.\n예) 블랙, 화이트, 베이지'); if(txt==null) return; const labels=txt.split(/[\n,]/).map(x=>x.trim()).filter(Boolean); if(!labels.length) return; this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),...labels.map(l=>({label:l,qty:1,claims:[]}))]})); },
+        bulkAdd:()=>{ const txt=window.prompt('옵션을 붙여넣으세요. 줄바꿈 또는 쉼표로 구분합니다.\n예) 블랙, 화이트, 베이지'); if(txt==null) return; const labels=txt.split(/[\n,]/).map(x=>x.trim()).filter(Boolean); if(!labels.length) return; this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),...labels.map(l=>({key:this._k(),label:l,qty:1,claims:[]}))]})); },
         sizes:(p.sizes||[]).map((s,i)=>({
           label: el==='ko'?(s.label||''):((s.tr&&s.tr[el]&&s.tr[el].label)||''),
           labelPh: el==='ko'?'옵션명 (예: S, 블랙)':((s.label||'옵션명')+' · 원문'),
@@ -765,7 +802,7 @@ class Component extends DCLogic {
           setImg:e=>{ const f=(e.target.files||[])[0]; if(f) this.readImg(f,url=>this.upd(p.id,pp=>({sizes:pp.sizes.map((x,j)=>j===i?{...x,img:url}:x)}))); e.target.value=''; },
           delImg:()=>this.upd(p.id,pp=>({sizes:pp.sizes.map((x,j)=>j===i?{...x,img:undefined}:x)})),
           del:()=>this.upd(p.id,pp=>({sizes:pp.sizes.filter((_,j)=>j!==i)})) })),
-        addSize:()=>this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),{label:'',qty:1,claims:[]}]})),
+        addSize:()=>this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),{key:this._k(),label:'',qty:1,claims:[]}]})),
         hasClaims:(p.sizes||[]).some(s=>(s.claims||[]).length>0),
         claimGroups:this.buildClaimGroups(p),
         copyAll:()=>{ const gs=this.buildClaimGroups(p); if(!gs.length){ this.flash('명단이 비어 있습니다'); return; } this.copyToClip(gs.map(g=>g._text()).join('\n\n')); } };
@@ -777,7 +814,7 @@ class Component extends DCLogic {
     const editingProduct=!!st.editId&&st.products.some(p=>p.id===st.editId);
     const overviewCards=adminCards.map(ac=>{ const p=st.products.find(x=>x.id===ac.id)||{}; const imgs=p.images||[]; const cc=(p.sizes||[]).reduce((n,s)=>n+((s.claims||[]).length),0); const _clm=new Set(); (p.sizes||[]).forEach(s=>(s.claims||[]).forEach(c=>{const k=(c.buyer||'').trim().toLowerCase().replace(/^@/,''); if(k) _clm.add(k);})); const _upl=new Set((p.gallery||[]).map(g=>(g.buyer||'').trim().toLowerCase().replace(/^@/,'')).filter(Boolean)); let _pend=0; _clm.forEach(k=>{ if(!_upl.has(k)) _pend++; }); const badge={position:'absolute',top:'10px',left:'10px',fontSize:'11px',fontWeight:700,letterSpacing:'.06em',borderRadius:'999px',padding:'4px 11px',background:ac.statusText==='마감'?'#171717':'rgba(255,255,255,.92)',color:ac.statusText==='마감'?'#fff':'#5c5c58'}; return { id:ac.id, name:p.name||'이름 없는 상품', thumb:imgs[0], hasThumb:imgs.length>0, noThumb:imgs.length===0, statusText:ac.statusText, statusStyle:badge, sizeCount:(p.sizes||[]).length, claimCount:cc, pendingPhoto:_pend, hasPendingPhoto:_pend>0, hasDeadline:!!p.deadline, deadlineText:p.deadline?('~ '+(new Date(p.deadline+'T00:00:00').getMonth()+1)+'/'+new Date(p.deadline+'T00:00:00').getDate()):'', edit:()=>this.setState({editId:ac.id,adminTab:'products'}) }; });
     const editCards=adminCards.filter(ac=>ac.id===st.editId);
-    const login=()=>{ if(st.pw===adminPw) this.setState({authed:true,pwErr:'',pw:''}); else this.setState({pwErr:'비밀번호가 올바르지 않습니다'}); };
+    const login=async()=>{ const email=(st.pwEmail||'').trim(), password=st.pw||''; if(!email||!password){ this.setState({pwErr:'이메일과 비밀번호를 입력해주세요'}); return; } const { error }=await this._sb().auth.signInWithPassword({ email, password }); if(error) this.setState({pwErr:'로그인 실패 — 이메일/비밀번호를 확인해주세요', pw:''}); else this.setState({pwErr:'', pw:''}); };
     const confirmClaim=()=>{
       const c=this.state.claiming; if(!c) return;
       const name=this.state.cname.trim();
@@ -793,14 +830,19 @@ class Component extends DCLogic {
       const shipLabels=(p.shipFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
       const optLabels=(p.optFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
       const ship={}; shipLabels.forEach(lb=>{ const v=((this.state.cship||{})[lb]||'').trim(); if(v) ship[lb]=v; });
-      const at=Date.now();
-      this.upd(p.id,pp=>({sizes:pp.sizes.map(x=>{
-        const lb=x.label||'옵션'; if(!picks.includes(lb)) return x;
-        const opt={}; optLabels.forEach(fl=>{ const v=(((this.state.copt||{})[lb]||{})[fl]||'').trim(); if(v) opt[fl]=v; });
-        return {...x,claims:[...(x.claims||[]),{buyer:name,at,ship,opt}]};
-      })}));
-      this.setState({claiming:null,cname:'',cErr:'',cship:{},copt:{},csizes:[]});
-      this.flash(L.toastConfirm(name,(p.name||'상품'),picks.length));
+      const sb=this._sb();
+      (async()=>{
+        let ok=0, failMsg='';
+        for(const lb of picks){
+          const s=(p.sizes||[]).find(x=>(x.label||'옵션')===lb); if(!s||!s.key){ failMsg=L.cErrJustClosed(lb); break; }
+          const opt={}; optLabels.forEach(fl=>{ const v=(((this.state.copt||{})[lb]||{})[fl]||'').trim(); if(v) opt[fl]=v; });
+          const { error }=await sb.rpc('claim',{ p_product_id:p.id, p_size_key:s.key, p_buyer:name, p_opt:opt, p_ship:ship });
+          if(error){ const m=error.message||''; failMsg = m.indexOf('LIMIT')>=0?L.cErrLimit(mine,lim):(m.indexOf('SOLD_OUT')>=0?L.cErrJustClosed(lb):L.cErrClosed); break; }
+          ok++;
+        }
+        if(ok>0){ this.setState({claiming:null,cname:'',cErr:'',cship:{},copt:{},csizes:[]}); this.flash(L.toastConfirm(name,(p.name||'상품'),ok)); this._reload(); }
+        else this.setState({cErr:failMsg||L.cErrClosed});
+      })();
     };
     let claimTitle='', guideText='', copyText='', claimShipFields=[], claimOptGroups=[], claimSizeOptions=[], claimMulti=false;
     if(st.claiming){
@@ -858,21 +900,25 @@ class Component extends DCLogic {
       if(!staged.length){ this.setState({uErr:L.uErrPhoto}); return; }
       const pid=this.state.uploading.pid; let size=this.state.usize; if(size==='__other__') size=(this.state.uother||'').trim()||L.other;
       const msg=(this.state.umsg||'').trim();
-      let done=0, total=staged.length, failed=0;
-      staged.forEach(st=>URL.revokeObjectURL(st.url));
+      const files=staged.map(s=>s.file); const total=files.length;
+      staged.forEach(s=>URL.revokeObjectURL(s.url));
       this.flash(L.uploading(total));
-      staged.forEach(({file:f})=>{
-        const id='ph'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-        const prod=(this.state.products.find(x=>x.id===pid)||{}).name||'상품';
-        this.idbPut(id,f).then(()=>{
-          this.upd(pid,pp=>({gallery:[...(pp.gallery||[]),{id,buyer,size,msg,name:f.name||'photo',type:f.type,bytes:f.size,at:Date.now()}]}));
-          this.mailPhoto(f,{buyer,size,product:prod,msg}).then(res=>{
-            if(res.ok) this.upd(pid,pp=>({gallery:(pp.gallery||[]).map(g=>g.id===id?{...g,sent:true}:g)}));
-          });
-        }).catch(()=>{ failed++; }).finally(()=>{
-          if(++done===total){ this.loadUrls(); this.setState({uploading:null,ubuyer:'',usize:'',uother:'',uErr:'',ustage:[],umsg:''}); this.flash(failed?L.uploadPartial(total-failed,total):L.uploaded(total)); }
-        });
-      });
+      this.setState({uploading:null,ubuyer:'',usize:'',uother:'',uErr:'',ustage:[],umsg:''});
+      (async()=>{
+        const sb=this._sb(); let ok=0;
+        for(const f of files){
+          const id='ph'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+          const ext=((f.name&&f.name.match(/\.(\w+)$/)||[])[1]||(f.type&&f.type.split('/')[1])||'jpg').toLowerCase();
+          const path=pid+'/'+id+'.'+ext;
+          const up=await sb.storage.from('sample-photos').upload(path, f, { contentType:f.type||'image/jpeg', upsert:false });
+          if(up.error) continue;
+          const ins=await sb.from('photos').insert({ id, product_id:pid, buyer, size, msg, filename:f.name||'photo', mime:f.type, bytes:f.size, path });
+          if(ins.error) continue;
+          ok++;
+        }
+        this.flash(ok===total?L.uploaded(total):L.uploadPartial(ok,total));
+        this._reload();
+      })();
     };
     const uStageThumbs=(st.ustage||[]).map(item=>({ url:item.url, remove:()=>this.setState(s=>{ const it=(s.ustage||[]).find(x=>x.sid===item.sid); if(it) URL.revokeObjectURL(it.url); return {ustage:(s.ustage||[]).filter(x=>x.sid!==item.sid)}; }) }));
 
@@ -902,13 +948,13 @@ class Component extends DCLogic {
           this.dl(u, safeName(buyer)+'_사진'+files.length+'장.zip'); setTimeout(()=>URL.revokeObjectURL(u),5000);
           this.flash('ZIP 저장 완료 · '+files.length+'장');
         },
-        deleteAll:()=>{ if(!window.confirm(buyer+' 님의 사진 '+rows.length+'장을 모두 삭제할까요? 되돌릴 수 없습니다.')) return; const set=new Set(rows.map(r=>r.g)); rows.forEach(r=>{ if(r.g.id) this.idbDel(r.g.id); }); const byProd={}; rows.forEach(r=>{ (byProd[r.p.id]=byProd[r.p.id]||[]).push(r.g); }); Object.keys(byProd).forEach(pid=>{ this.upd(pid,x=>({gallery:(x.gallery||[]).filter(g=>!set.has(g))})); }); this.flash('사진 '+rows.length+'장 삭제 완료'); },
+        deleteAll:async()=>{ if(!window.confirm(buyer+' 님의 사진 '+rows.length+'장을 모두 삭제할까요? 되돌릴 수 없습니다.')) return; const sb=this._sb(); const ids=rows.map(r=>r.g.key); const paths=rows.map(r=>r.g.path).filter(Boolean); if(paths.length) await sb.storage.from('sample-photos').remove(paths); await sb.from('photos').delete().in('id',ids); this.flash('사진 '+rows.length+'장 삭제 완료'); this._reload(); },
         items:rows.map(({g,gi,p})=>({
           img:srcOf(g), product:p.name||'이름 없는 상품', size:g.size||'', hasSize:!!g.size,
           msg:g.msg||'', hasMsg:!!(g.msg&&g.msg.trim()),
           time:new Date(g.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),
           download:async ()=>{ const blob=await blobOf(g); if(!blob){ this.flash('사진을 불러올 수 없습니다'); return; } const u=URL.createObjectURL(blob); this.dl(u, safeName(p.name)+'_'+safeName(buyer)+(g.size?'_'+safeName(g.size):'')+'.'+extOf(g)); setTimeout(()=>URL.revokeObjectURL(u),5000); },
-          del:()=>{ if(window.confirm('이 사진을 삭제할까요?')){ if(g.id) this.idbDel(g.id); this.upd(p.id,pp=>({gallery:pp.gallery.filter((_,j)=>j!==gi)})); } }
+          del:async()=>{ if(window.confirm('이 사진을 삭제할까요?')){ const sb=this._sb(); if(g.path) await sb.storage.from('sample-photos').remove([g.path]); await sb.from('photos').delete().eq('id',g.key); this._reload(); } }
         }))
       };
     });
@@ -933,19 +979,20 @@ class Component extends DCLogic {
     const copyPending=()=>{ if(!pendingUploaders.length){ this.flash('미제출 인원이 없습니다'); return; } this.copyToClip(pendingUploaders.map(u=>u.buyer).join('\n')); };
 
     const unsent=[];
-    st.products.forEach(p=>(p.gallery||[]).forEach((g,gi)=>{ if(g&&g.id&&!g.sent) unsent.push({g,gi,p}); }));
+    st.products.forEach(p=>(p.gallery||[]).forEach((g,gi)=>{ if(g&&!g.sent) unsent.push({g,gi,p}); }));
     const emailNotify=async ()=>{
       if(!(st.settings.w3key||'').trim()){ this.flash('먼저 메일 발송 키를 입력해주세요'); return; }
       if(!unsent.length){ this.flash('모든 사진이 이미 백업되었습니다'); return; }
       this.flash('백업 안 된 사진 '+unsent.length+'장 메일 전송 중…');
       let ok=0;
       for(const {g,p} of unsent){
-        const blob=await (g.id?this.idbGet(g.id):null); if(!blob) continue;
+        const blob=await blobOf(g); if(!blob) continue;
         const file=new File([blob], (g.name||'photo.jpg'), {type:g.type||blob.type||'image/jpeg'});
         const res=await this.mailPhoto(file,{buyer:g.buyer,size:g.size,product:p.name,msg:g.msg});
-        if(res.ok){ ok++; this.upd(p.id,pp=>({gallery:(pp.gallery||[]).map(x=>x.id===g.id?{...x,sent:true}:x)})); }
+        if(res.ok){ ok++; await this._sb().from('photos').update({sent:true}).eq('id',g.key); }
       }
       this.flash('백업 메일 전송 완료 · '+ok+'/'+unsent.length+'장');
+      this._reload();
     };
 
     return {
@@ -994,10 +1041,11 @@ class Component extends DCLogic {
       pendingUploaders, pendingCount:pendingUploaders.length, hasPending:pendingUploaders.length>0,
       showPending:st.showPending, togglePending:()=>this.setState(s=>({showPending:!s.showPending})),
       pendingToggleLabel:st.showPending?'접기 ▲':'아이디 보기 ▼', copyPending,
+      pwEmail:st.pwEmail, setPwEmail:e=>this.setState({pwEmail:e.target.value,pwErr:''}),
       pw:st.pw, setPw:e=>this.setState({pw:e.target.value,pwErr:''}), pwKey:e=>{ if(e.key==='Enter') login(); }, login,
       pwErr:st.pwErr, hasPwErr:!!st.pwErr,
       cards, hasCards:cards.length>0, noCards:cards.length===0,
-      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.persist([{id,name:'',desc:'',copyForm:'',images:[],sizes:[{label:'FREE',qty:1,claims:[]}],deadline:'',perPerson:1,closed:false},...this.state.products]); this.setState({adminTab:'products',editId:id}); },
+      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.persist([{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],deadline:'',perPerson:1,closed:false},...this.state.products]); this.setState({adminTab:'products',editId:id}); },
       adminTab:st.adminTab,
       tabToProducts:()=>this.setState({adminTab:'products',editId:null}),
       tabToGallery:()=>this.setState({adminTab:'gallery',editId:null}),
