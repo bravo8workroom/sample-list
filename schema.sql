@@ -2,20 +2,19 @@
 --  샘플 리스트 — Supabase 스키마 (확정본)
 --  Supabase 대시보드 → SQL Editor 에 통째로 붙여넣고 [Run] 한 번.
 --
---  안전: 아직 매장이 오픈 전이라 products/submissions/photos 에는
---  실데이터가 없습니다. 아래는 그 3개를 깨끗이 재생성합니다.
---  settings(설정 1행)는 보존합니다.
---  ⚠ 이미 손님 주문/사진이 쌓인 뒤라면 이 스크립트를 돌리지 마세요.
+--  ✅ 이 스크립트는 "없는 것만 새로 만들고, 이미 있는 테이블·데이터는
+--     절대 건드리지 않습니다" (create table if not exists).
+--     → 실수로 다시 Run 해도 손님 데이터는 안 지워집니다.
+--
+--  ⚠ 과거에는 맨 위에서 테이블을 drop(삭제) 했었지만, 매장 오픈 후
+--     실수 방지를 위해 삭제 코드를 제거했습니다. 정말로 처음부터
+--     싹 비우고 재생성해야 할 때만, 그때 수동으로 drop 하세요.
 -- ============================================================
 
--- 1) 비어있는 테이블 정리 (settings 는 건드리지 않음)
-drop table if exists photos       cascade;
-drop table if exists submissions  cascade;
-drop table if exists size_counts  cascade;
-drop table if exists products     cascade;
+-- 1) (삭제 코드 제거됨) — 아래는 없는 테이블만 만든다. 기존 데이터 보존.
 
 -- 2) products : 상품 "정의"만 통짜 JSON 으로 (claims/gallery 제외)
-create table products (
+create table if not exists products (
   id         text primary key,
   doc        jsonb not null,          -- {name,desc,copyForm,images,sizes:[{key,label,qty,...}],deadline,perPerson,closed,...}
   sort       double precision default 0,
@@ -23,7 +22,7 @@ create table products (
 );
 
 -- 3) size_counts : 옵션별 확정 수량 (개인정보 없음 → 손님도 읽기 가능)
-create table size_counts (
+create table if not exists size_counts (
   product_id text not null references products(id) on delete cascade,
   size_key   text not null,
   claimed    int  not null default 0,
@@ -31,7 +30,7 @@ create table size_counts (
 );
 
 -- 4) submissions : 손님 신청 1건 = 1행 (배송정보 포함 → 관리자만 읽기)
-create table submissions (
+create table if not exists submissions (
   id         bigint generated always as identity primary key,
   product_id text not null references products(id) on delete cascade,
   size_key   text not null,
@@ -40,10 +39,10 @@ create table submissions (
   ship       jsonb not null default '{}'::jsonb,
   created_at timestamptz default now()
 );
-create index on submissions (product_id);
+create index if not exists submissions_product_id_idx on submissions (product_id);
 
 -- 5) photos : 손님이 올린 사진 메타 (실파일은 Storage) → 관리자만 읽기
-create table photos (
+create table if not exists photos (
   id         text primary key,
   product_id text not null references products(id) on delete cascade,
   buyer      text,
@@ -56,7 +55,7 @@ create table photos (
   sent       boolean default false,
   created_at timestamptz default now()
 );
-create index on photos (product_id);
+create index if not exists photos_product_id_idx on photos (product_id);
 
 -- 6) settings : 이미 있으면 보존, 없으면 생성 + 필요한 컬럼 보장
 create table if not exists settings (
