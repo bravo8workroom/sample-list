@@ -145,7 +145,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
       <button onClick="{{ tabToProducts }}" style="{{ navProductsStyle }}">샘플 상품 관리<sc-if value="{{ hasProducts }}"><span style="{{ navProductsCountStyle }}">{{ productCount }}</span></sc-if></button>
       <button onClick="{{ tabToGallery }}" style="{{ navGalleryStyle }}">고객 사진 모음<sc-if value="{{ hasUnsent }}"><span style="margin-left:auto;font-size:10.5px;font-weight:700;color:#c2410c;white-space:nowrap">●{{ unsentCount }}</span></sc-if></button>
       <button onClick="{{ tabToBuyers }}" style="{{ navBuyersStyle }}">아이디 수량관리<sc-if value="{{ hasBuyers }}"><span style="{{ navBuyersCountStyle }}">{{ buyerCount }}</span></sc-if></button>
-      <button onClick="{{ tabToSettings }}" style="{{ navSettingsStyle }}">페이지·백업 설정</button>
+      <button onClick="{{ tabToSettings }}" style="{{ navSettingsStyle }}">페이지·알림 설정</button>
     </nav>
     <div style="flex:1;min-width:0">
 
@@ -390,7 +390,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
     </sc-if>
 
     <sc-if value="{{ tabSettings }}" hint-placeholder-val="{{ false }}">
-    <h1 style="font-size:23px;font-weight:700;letter-spacing:-.02em;margin:0 0 22px">페이지·백업 설정</h1>
+    <h1 style="font-size:23px;font-weight:700;letter-spacing:-.02em;margin:0 0 22px">페이지·알림 설정</h1>
     <div style="background:#fff;border:1px solid #e3e3e0;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
       <div style="font-size:13px;font-weight:700;letter-spacing:-.01em">메인 페이지 문구</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7f7f5;border:1px solid #eeeeec;border-radius:10px;padding:10px 12px">
@@ -434,8 +434,8 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           <div style="font-size:11.5px;color:#b3b3af">올린 사람별로 묶여 있어요 · 전체 ZIP로 한 번에 받으세요</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-          <button onClick="{{ emailNotify }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">안 보낸 사진 메일 백업</button>
-          <sc-if value="{{ hasUnsent }}"><span style="font-size:11px;color:#c2410c;font-weight:600;white-space:nowrap">백업 대기 {{ unsentCount }}장</span></sc-if>
+          <button onClick="{{ emailNotify }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">새 사진 알림 보내기</button>
+          <sc-if value="{{ hasUnsent }}"><span style="font-size:11px;color:#c2410c;font-weight:600;white-space:nowrap">알림 대기 {{ unsentCount }}장</span></sc-if>
         </div>
       </div>
       <sc-if value="{{ hasPending }}">
@@ -642,7 +642,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.',email1:'',email2:''}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], bNewId:'', bNewQty:1, bBulk:'' };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], bNewId:'', bNewQty:1, bBulk:'' };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
@@ -729,23 +729,20 @@ class Component extends DCLogic {
   saveSettings(){
     const s=this.state.settings;
     this.setState({settingsDirty:false});
-    this._sb().from('settings').upsert({ id:1, title:s.title||'', subtitle:s.subtitle||'', email1:s.email1||'', email2:s.email2||'', w3key:s.w3key||'', admin_ids:s.adminIds||'', tr:s.tr||{} }).then(({error})=>{ if(error){ this.flash('설정 저장 실패'); this.setState({settingsDirty:true}); } else this.flash('설정이 저장되었습니다'); });
+    this._sb().from('settings').upsert({ id:1, title:s.title||'', subtitle:s.subtitle||'', w3key:s.w3key||'', admin_ids:s.adminIds||'', tr:s.tr||{} }).then(({error})=>{ if(error){ this.flash('설정 저장 실패'); this.setState({settingsDirty:true}); } else this.flash('설정이 저장되었습니다'); });
   }
   upd(id,patch){ this.setState({dirty:true,products:this.state.products.map(p=>p.id===id?{...p,...(typeof patch==='function'?patch(p):patch)}:p)}); }
   flash(msg){ this.setState({toast:msg}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:''}),2800); }
-  async mailPhoto(file, meta){
+  async notifyUploads(items){
     const key=(this.state.settings.w3key||'').trim();
     if(!key) return {ok:false, reason:'nokey'};
     try{
+      const lines=items.map(it=>'· '+(it.buyer||'')+' / '+(it.product||'상품')+(it.size?(' ('+it.size+')'):'')+(it.msg?(' — '+it.msg):'')).join('\n');
       const fd=new FormData();
       fd.append('access_key', key);
-      fd.append('subject', '[샘플마켓 백업] '+(meta.product||'상품')+' · '+(meta.buyer||'')+(meta.size?(' / '+meta.size):''));
-      fd.append('from_name', '샘플마켓 자동백업');
-      fd.append('message', '고객 업로드 사진 백업\n\n상품: '+(meta.product||'')+'\n옵션: '+(meta.size||'-')+'\n올린 사람: '+(meta.buyer||'')+(meta.msg?('\n전달내용: '+meta.msg):'')+'\n시각: '+new Date().toLocaleString('ko-KR')+'\n\n※ 첨부된 사진이 원본 백업입니다.');
-      const cc=[this.state.settings.email1,this.state.settings.email2].map(x=>(x||'').trim()).filter(Boolean).join(',');
-      if(cc) fd.append('cc', cc);
-      const fname=(meta.buyer||'photo').replace(/[\\/:*?"<>|@]+/g,'')+'_'+(file.name||'photo.jpg');
-      fd.append('attachment', file, fname);
+      fd.append('subject', '[샘플마켓] 새 사진 '+items.length+'장 올라왔어요');
+      fd.append('from_name', '샘플마켓 알림');
+      fd.append('message', '고객이 새 사진을 올렸어요.\n\n'+lines+'\n\n시각: '+new Date().toLocaleString('ko-KR')+'\n\n※ 사진 원본은 관리자 페이지 · 고객 사진 모음에서 확인하세요.');
       const r=await fetch('https://api.web3forms.com/submit',{method:'POST',body:fd});
       const j=await r.json().catch(()=>({}));
       return {ok:r.ok&&j.success!==false};
@@ -1172,16 +1169,16 @@ class Component extends DCLogic {
     st.products.forEach(p=>(p.gallery||[]).forEach((g,gi)=>{ if(g&&!g.sent) unsent.push({g,gi,p}); }));
     const emailNotify=async ()=>{
       if(!(st.settings.w3key||'').trim()){ this.flash('먼저 메일 발송 키를 입력해주세요'); return; }
-      if(!unsent.length){ this.flash('모든 사진이 이미 백업되었습니다'); return; }
-      this.flash('백업 안 된 사진 '+unsent.length+'장 메일 전송 중…');
-      let ok=0;
-      for(const {g,p} of unsent){
-        const blob=await blobOf(g); if(!blob) continue;
-        const file=new File([blob], (g.name||'photo.jpg'), {type:g.type||blob.type||'image/jpeg'});
-        const res=await this.mailPhoto(file,{buyer:g.buyer,size:g.size,product:p.name,msg:g.msg});
-        if(res.ok){ ok++; await this._sb().from('photos').update({sent:true}).eq('id',g.key); }
+      if(!unsent.length){ this.flash('새로 알릴 사진이 없습니다'); return; }
+      this.flash('새 사진 '+unsent.length+'장 알림 전송 중…');
+      const items=unsent.map(({g,p})=>({buyer:g.buyer,size:g.size,product:p.name,msg:g.msg}));
+      const res=await this.notifyUploads(items);
+      if(res.ok){
+        for(const {g} of unsent){ await this._sb().from('photos').update({sent:true}).eq('id',g.key); }
+        this.flash('알림 전송 완료 · 새 사진 '+unsent.length+'장');
+      } else {
+        this.flash('알림 전송 실패 · 잠시 후 다시 시도해주세요');
       }
-      this.flash('백업 메일 전송 완료 · '+ok+'/'+unsent.length+'장');
       this._reload();
     };
 
@@ -1214,8 +1211,6 @@ class Component extends DCLogic {
       notAdminViewer:st.view==='admin'&&!isAdminViewer,
       siteTitle:this.trGet(st.settings,st.lang,'title'), setTitle:e=>this.setSettingsTr(el,'title',e.target.value),
       siteSubtitle:this.trGet(st.settings,st.lang,'subtitle'), setSubtitle:e=>this.setSettingsTr(el,'subtitle',e.target.value),
-      email1:st.settings.email1||'', setEmail1:e=>this.persistSettings({email1:e.target.value}),
-      email2:st.settings.email2||'', setEmail2:e=>this.persistSettings({email2:e.target.value}),
       w3key:st.settings.w3key||'', setW3key:e=>this.persistSettings({w3key:e.target.value}),
       settingsDirty:st.settingsDirty, saveSettings:()=>this.saveSettings(),
       unsentCount:unsent.length, hasUnsent:unsent.length>0,
