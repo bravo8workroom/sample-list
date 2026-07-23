@@ -977,7 +977,7 @@ class Component extends DCLogic {
       statusDoneStyle:{...bChip,background:'#171717',color:'#fff'},
       statusOpenStyle:{...bChip,background:'#eaf6ee',color:'#1a7f37'},
       statusOffStyle:{...bChip,background:'#f0f0ee',color:'#8a8a86'},
-      toggle:()=>this.toggleBuyer(b.id), toggleLabel:b.opened?'耳쒖쭚':'爰쇱쭚',
+      toggle:()=>this.toggleBuyer(b.id), toggleLabel:b.opened?'켜짐':'꺼짐',
       toggleStyle:{background:b.opened?'#171717':'#fff',color:b.opened?'#fff':'#8a8a86',border:'1px solid '+(b.opened?'#171717':'#d4d4d0'),borderRadius:'999px',padding:'6px 12px',fontSize:'12px',fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'},
       del:()=>this.delBuyer(b.id)
     }; });
