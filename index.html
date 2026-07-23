@@ -363,7 +363,6 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           <span style="width:88px;text-align:center">허용 수량</span>
           <span style="width:70px;text-align:center">사용</span>
           <span style="width:78px;text-align:center">상태</span>
-          <span style="width:64px;text-align:center">스위치</span>
           <span style="width:24px"></span>
         </div>
         <sc-for list="{{ buyerRows }}" as="b" hint-placeholder-count="1">
@@ -374,10 +373,6 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             <span style="width:78px;display:flex;justify-content:center">
               <sc-if value="{{ b.statusDone }}"><span style="{{ b.statusDoneStyle }}">완료</span></sc-if>
               <sc-if value="{{ b.statusOpen }}"><span style="{{ b.statusOpenStyle }}">진행중</span></sc-if>
-              <sc-if value="{{ b.statusOff }}"><span style="{{ b.statusOffStyle }}">중지</span></sc-if>
-            </span>
-            <span style="width:64px;display:flex;justify-content:center">
-              <button onClick="{{ b.toggle }}" style="{{ b.toggleStyle }}">{{ b.toggleLabel }}</button>
             </span>
             <button onClick="{{ b.del }}" style="width:24px;background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
           </div>
@@ -713,7 +708,6 @@ class Component extends DCLogic {
   _delBuyerDb(key){ this.__bpPending=true; this._sb().from('buyers').delete().eq('id',key).then(({error})=>{ this.__bpPending=false; if(error) this.flash('삭제 실패: '+error.message); }); }
   addBuyer(rawId,qty){ const key=String(rawId||'').trim().toLowerCase().replace(/^@/,''); if(!key){ this.flash('아이디를 입력해주세요'); return; } const q=Math.max(1,parseInt(qty,10)||1); const list=(this.state.buyers||[]).slice(); const i=list.findIndex(b=>b.id===key); if(i>=0) list[i]={...list[i],quota:q,opened:true}; else list.unshift({id:key,quota:q,opened:true,note:''}); this.setState({buyers:list,bNewId:'',bNewQty:1}); this._saveBuyers([{id:key,quota:q,opened:true}]); }
   setBuyerQuota(key,q){ const qq=Math.max(1,parseInt(q,10)||1); this.setState({buyers:(this.state.buyers||[]).map(b=>b.id===key?{...b,quota:qq}:b)}); clearTimeout(this.__bqt); this.__bpPending=true; this.__bqt=setTimeout(()=>this._saveBuyers([{id:key,quota:qq}]),500); }
-  toggleBuyer(key){ const cur=(this.state.buyers||[]).find(b=>b.id===key); if(!cur) return; const nv=!cur.opened; this.setState({buyers:(this.state.buyers||[]).map(b=>b.id===key?{...b,opened:nv}:b)}); this._saveBuyers([{id:key,opened:nv}]); }
   delBuyer(key){ if(!window.confirm('@'+key+' 아이디를 삭제할까요? 되돌릴 수 없습니다.')) return; this.setState({buyers:(this.state.buyers||[]).filter(b=>b.id!==key)}); this._delBuyerDb(key); }
   bulkAddBuyers(text){ const lines=String(text||'').split(/\n/).map(x=>x.trim()).filter(Boolean); if(!lines.length) return; const list=(this.state.buyers||[]).slice(); const rows=[]; lines.forEach(ln=>{ const m=ln.match(/^(.+?)[\s,]+(\d+)\s*$/); const id=(m?m[1]:ln).trim().toLowerCase().replace(/^@/,''); if(!id) return; const q=Math.max(1,m?parseInt(m[2],10):1); const i=list.findIndex(b=>b.id===id); if(i>=0) list[i]={...list[i],quota:q,opened:true}; else list.unshift({id,quota:q,opened:true,note:''}); rows.push({id,quota:q,opened:true}); }); if(!rows.length) return; this.setState({buyers:list,bBulk:''}); this._saveBuyers(rows); this.flash(rows.length+'명 등록했어요'); }
   i18n(){ return {
@@ -973,12 +967,9 @@ class Component extends DCLogic {
       handle:'@'+b.id, instaUrl:'https://instagram.com/'+b.id,
       quota:b.quota, setQuota:e=>this.setBuyerQuota(b.id,e.target.value),
       usedText:used+' / '+b.quota,
-      statusDone:done, statusOpen:!done&&b.opened, statusOff:!done&&!b.opened,
+      statusDone:done, statusOpen:!done,
       statusDoneStyle:{...bChip,background:'#171717',color:'#fff'},
       statusOpenStyle:{...bChip,background:'#eaf6ee',color:'#1a7f37'},
-      statusOffStyle:{...bChip,background:'#f0f0ee',color:'#8a8a86'},
-      toggle:()=>this.toggleBuyer(b.id), toggleLabel:b.opened?'켜짐':'꺼짐',
-      toggleStyle:{background:b.opened?'#171717':'#fff',color:b.opened?'#fff':'#8a8a86',border:'1px solid '+(b.opened?'#171717':'#d4d4d0'),borderRadius:'999px',padding:'6px 12px',fontSize:'12px',fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'},
       del:()=>this.delBuyer(b.id)
     }; });
     const login=async()=>{ const email=(st.pwEmail||'').trim(), password=st.pw||''; if(!email||!password){ this.setState({pwErr:'이메일과 비밀번호를 입력해주세요'}); return; } const { error }=await this._sb().auth.signInWithPassword({ email, password }); if(error) this.setState({pwErr:'로그인 실패 — 이메일/비밀번호를 확인해주세요', pw:''}); else this.setState({pwErr:'', pw:''}); };
