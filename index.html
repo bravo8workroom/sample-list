@@ -317,6 +317,14 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
                     </div>
                   </sc-for>
                 </div>
+                <sc-if value="{{ g.hasDraft }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;border-top:1px dashed #eeeeec;padding-top:9px">
+                    <span style="font-size:11px;font-weight:700;color:#8a8a86;align-self:center;margin-right:2px">시안</span>
+                    <sc-for list="{{ g.draftPhotos }}" as="d" hint-placeholder-count="0">
+                      <img src="{{ d.img }}" onClick="{{ d.open }}" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:1px solid #e3e3e0;cursor:pointer;display:block">
+                    </sc-for>
+                  </div>
+                </sc-if>
               </div>
             </sc-for>
           </div>
@@ -327,6 +335,58 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
         </div>
       </div>
     </sc-for>
+    </sc-if>
+
+    <sc-if value="{{ tabBuyers }}" hint-placeholder-val="{{ false }}">
+    <h1 style="font-size:23px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px">아이디 수량관리</h1>
+    <p style="margin:0 0 22px;color:#8a8a86;font-size:13.5px;line-height:1.6">여기 등록한 인스타 아이디만 주문할 수 있어요. 수량은 <b style="color:#5c5c58">여러 상품을 통틀어</b> 적용되는 총 개수예요 (예: 1로 두면 여러 상품 중 딱 1개만). 수량을 다 쓰면 자동으로 ‘완료’ 처리돼 더는 못 고릅니다.</p>
+    <div style="background:#fff;border:1px solid #e3e3e0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
+      <div style="font-size:13px;font-weight:700;letter-spacing:-.01em">아이디 추가</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input value="{{ bNewId }}" onChange="{{ setBNewId }}" onKeyDown="{{ bNewKey }}" placeholder="@인스타 아이디" style="flex:1;min-width:160px;border:1px solid #d4d4d0;border-radius:9px;padding:10px 12px;font-size:13.5px;outline:none" style-focus="border-color:#171717">
+        <input type="number" min="1" value="{{ bNewQty }}" onChange="{{ setBNewQty }}" style="width:84px;border:1px solid #d4d4d0;border-radius:9px;padding:10px 12px;font-size:13.5px;outline:none;text-align:center" style-focus="border-color:#171717">
+        <button onClick="{{ addBuyerBtn }}" style="background:#171717;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap" style-hover="background:#3d3d3a">+ 추가</button>
+      </div>
+      <details style="border-top:1px solid #eeeeec;padding-top:12px">
+        <summary style="font-size:12.5px;color:#8a8a86;cursor:pointer;font-weight:600">여러 명 한 번에 붙여넣기</summary>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <div style="font-size:11.5px;color:#b3b3af;line-height:1.6">한 줄에 아이디 하나씩. 수량을 다르게 주려면 뒤에 숫자를 붙이세요. 예) <b>@minji 2</b> · 숫자를 안 쓰면 1개.</div>
+          <textarea value="{{ bBulk }}" onChange="{{ setBBulk }}" rows="4" placeholder="@minji 2&#10;@soo&#10;@hana 3" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
+          <button onClick="{{ bulkAddBtn }}" style="align-self:flex-start;background:none;border:1px solid #d4d4d0;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;color:#171717;cursor:pointer" style-hover="border-color:#171717">여러 명 등록</button>
+        </div>
+      </details>
+    </div>
+    <sc-if value="{{ hasBuyers }}">
+      <div style="background:#fff;border:1px solid #e3e3e0;border-radius:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:11px;color:#b3b3af;font-weight:700;background:#fafafa;border-bottom:1px solid #eeeeec">
+          <span style="flex:1">인스타 아이디</span>
+          <span style="width:88px;text-align:center">허용 수량</span>
+          <span style="width:70px;text-align:center">사용</span>
+          <span style="width:78px;text-align:center">상태</span>
+          <span style="width:64px;text-align:center">스위치</span>
+          <span style="width:24px"></span>
+        </div>
+        <sc-for list="{{ buyerRows }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #f4f4f2">
+            <a href="{{ b.instaUrl }}" target="_blank" rel="noopener" style="flex:1;font-weight:700;font-size:13.5px;color:#171717;text-decoration:underline;text-underline-offset:3px;word-break:break-all">{{ b.handle }}</a>
+            <input type="number" min="1" value="{{ b.quota }}" onChange="{{ b.setQuota }}" style="width:88px;border:1px solid #d4d4d0;border-radius:9px;padding:8px 10px;font-size:13.5px;outline:none;text-align:center" style-focus="border-color:#171717">
+            <span style="width:70px;text-align:center;font-size:12.5px;color:#5c5c58;font-weight:600">{{ b.usedText }}</span>
+            <span style="width:78px;display:flex;justify-content:center">
+              <sc-if value="{{ b.statusDone }}"><span style="{{ b.statusDoneStyle }}">완료</span></sc-if>
+              <sc-if value="{{ b.statusOpen }}"><span style="{{ b.statusOpenStyle }}">진행중</span></sc-if>
+              <sc-if value="{{ b.statusOff }}"><span style="{{ b.statusOffStyle }}">중지</span></sc-if>
+            </span>
+            <span style="width:64px;display:flex;justify-content:center">
+              <button onClick="{{ b.toggle }}" style="{{ b.toggleStyle }}">{{ b.toggleLabel }}</button>
+            </span>
+            <button onClick="{{ b.del }}" style="width:24px;background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noBuyers }}">
+      <div style="background:#fff;border:1px dashed #d4d4d0;border-radius:14px;padding:36px;text-align:center;color:#b3b3af;font-size:13.5px">아직 등록된 아이디가 없어요. 위에서 초대할 아이디를 추가해보세요.</div>
+    </sc-if>
     </sc-if>
 
     <sc-if value="{{ tabSettings }}" hint-placeholder-val="{{ false }}">
@@ -422,7 +482,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
               <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="0">
                 <div style="border:1px solid #e3e3e0;border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
-                  <div style="aspect-ratio:1/1;background:#ececea"><img src="{{ it.img }}" style="width:100%;height:100%;object-fit:cover"></div>
+                  <div style="aspect-ratio:1/1;background:#ececea;min-height:0;overflow:hidden"><img src="{{ it.img }}" style="width:100%;height:100%;object-fit:cover;display:block"></div>
                   <div style="padding:10px;display:flex;flex-direction:column;gap:6px">
                     <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;flex-wrap:wrap">
                       <span style="font-weight:600">{{ it.product }}</span>
@@ -491,6 +551,20 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             </sc-for>
           </div>
         </sc-if>
+        <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #eeeeec;padding-top:13px">
+          <span style="font-size:11.5px;color:#8a8a86;font-weight:700">{{ draftLabel }} <span style="color:#b3b3af;font-weight:400">· {{ draftIntro }}</span></span>
+          <label onDrop="{{ cDrop }}" onDragOver="{{ cDragOver }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1.5px dashed #d4d4d0;border-radius:12px;padding:18px 16px;text-align:center;cursor:pointer" style-hover="border-color:#171717"><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ cStage }}" style="display:none"><span style="font-size:22px;line-height:1;color:#8a8a86">＋</span><span style="font-size:13.5px;font-weight:600;color:#3d3d3a">{{ uPickLabel }}</span><span style="font-size:11.5px;color:#b3b3af">{{ uPickSub }}</span></label>
+          <sc-if value="{{ hasCStage }}">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <sc-for list="{{ cStageThumbs }}" as="t" hint-placeholder-count="0">
+                <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f0f0ee">
+                  <img src="{{ t.url }}" style="width:100%;height:100%;object-fit:cover;display:block">
+                  <button onClick="{{ t.remove }}" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border:none;border-radius:999px;background:rgba(23,23,23,.72);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
         <sc-if value="{{ showLegacyCopy }}">
         <div style="display:flex;flex-direction:column;gap:8px;background:#f7f7f5;border:1px solid #e3e3e0;border-radius:9px;padding:11px 12px">
           <div style="font-size:11.5px;color:#8a8a86;font-weight:600">{{ copyFormLabel }}</div>
@@ -586,8 +660,8 @@ class Component extends DCLogic {
   _buildProducts(rows, counts, subs, phs){
     const cmap={}; (counts||[]).forEach(c=>{ (cmap[c.product_id]=cmap[c.product_id]||{})[c.size_key]=c.claimed; });
     const smap={}; (subs||[]).forEach(s=>{ const k=s.product_id+'|'+s.size_key; (smap[k]=smap[k]||[]).push({ id:s.id, buyer:s.buyer, at:new Date(s.created_at).getTime(), ship:s.ship||{}, opt:s.opt||{} }); });
-    const gmap={}; (phs||[]).forEach(g=>{ (gmap[g.product_id]=gmap[g.product_id]||[]).push({ key:g.id, url:this._photoUrl(g.path), buyer:g.buyer, size:g.size, msg:g.msg, name:g.filename, type:g.mime, bytes:g.bytes, at:new Date(g.created_at).getTime(), sent:g.sent, path:g.path }); });
-    return (rows||[]).map(r=>{ const p={ ...(r.doc||{}), id:r.id }; p.sizes=(p.sizes||[]).map(s=>{ const key=s.key; const real=smap[r.id+'|'+key]; const claimed=(cmap[r.id]||{})[key]||0; return { ...s, claims: real || Array.from({length:claimed},()=>({buyer:'',at:0,ship:{},opt:{}})) }; }); p.gallery=gmap[r.id]||[]; return p; });
+    const gmap={}, dmap={}; (phs||[]).forEach(g=>{ const obj={ key:g.id, url:this._photoUrl(g.path), buyer:g.buyer, size:g.size, msg:g.msg, name:g.filename, type:g.mime, bytes:g.bytes, at:new Date(g.created_at).getTime(), sent:g.sent, path:g.path, kind:g.kind||'item' }; if((g.kind||'item')==='draft') (dmap[g.product_id]=dmap[g.product_id]||[]).push(obj); else (gmap[g.product_id]=gmap[g.product_id]||[]).push(obj); });
+    return (rows||[]).map(r=>{ const p={ ...(r.doc||{}), id:r.id }; p.sizes=(p.sizes||[]).map(s=>{ const key=s.key; const real=smap[r.id+'|'+key]; const claimed=(cmap[r.id]||{})[key]||0; return { ...s, claims: real || Array.from({length:claimed},()=>({buyer:'',at:0,ship:{},opt:{}})) }; }); p.gallery=gmap[r.id]||[]; p.drafts=dmap[r.id]||[]; return p; });
   }
   async _reload(force){
     const authed = force!=null ? force : this.state.authed;
@@ -648,10 +722,10 @@ class Component extends DCLogic {
   delBuyer(key){ if(!window.confirm('@'+key+' 아이디를 삭제할까요? 되돌릴 수 없습니다.')) return; this.setState({buyers:(this.state.buyers||[]).filter(b=>b.id!==key)}); this._delBuyerDb(key); }
   bulkAddBuyers(text){ const lines=String(text||'').split(/\n/).map(x=>x.trim()).filter(Boolean); if(!lines.length) return; const list=(this.state.buyers||[]).slice(); const rows=[]; lines.forEach(ln=>{ const m=ln.match(/^(.+?)[\s,]+(\d+)\s*$/); const id=(m?m[1]:ln).trim().toLowerCase().replace(/^@/,''); if(!id) return; const q=Math.max(1,m?parseInt(m[2],10):1); const i=list.findIndex(b=>b.id===id); if(i>=0) list[i]={...list[i],quota:q,opened:true}; else list.unshift({id,quota:q,opened:true,note:''}); rows.push({id,quota:q,opened:true}); }); if(!rows.length) return; this.setState({buyers:list,bBulk:''}); this._saveBuyers(rows); this.flash(rows.length+'명 등록했어요'); }
   i18n(){ return {
-    ko:{ navMain:'메인', navAdmin:'관리자', vTitle:'인스타아이디 입력', vPh:'@인스타 아이디', vEnter:'입장하기', vErrEmpty:'인스타 아이디를 입력해주세요', vErrNotInvited:'초대된 분이 아니에요.', vErrCheck:'확인 중 오류가 났어요. 잠시 후 다시 시도해주세요.', cErrDone:'선택 가능한 수량을 모두 사용하셨어요.', viewingAs:'지금 보는 아이디', change:'변경', left:n=>n+'개 남음', closedShort:'마감', available:'선택 가능', closedBadge:'마감', deadline:(m,d)=>'~ '+m+'/'+d+' 마감', uploadLink:'받은 상품 사진 올리기', emptyMain:'아직 등록된 상품이 없습니다. 관리자 페이지에서 상품을 추가해주세요.', claimIntro:'선착순 확정입니다. 아래 정보로 신청됩니다.', instaId:'인스타 아이디', optSelect:'옵션 선택', optMulti:'여러 개 선택할 수 있어요', copyForm:'복사 양식', copyFormBtn:'양식 복사', cancel:'취소', confirm:'선택 확정', uSuffix:'· 사용 사진 올리기', uIntro:'받으신 상품 사진을 올려주세요. 여러 장을 한 번에, 원본 화질 그대로 올릴 수 있어요.', optOptional:'옵션 (선택)', other:'기타', otherPh:'옵션을 직접 입력해주세요', msgLabel:'전달내용 (선택)', msgPh:'남기고 싶은 말을 자유롭게 적어주세요', priorHint:s=>'전에 선택하신 옵션: '+s, uPick:'사진 선택 · 여러 장 한 번에', uPickSub:'휴대폰은 앨범에서 여러 장 선택 · 컴퓨터는 끌어다 놓아도 돼요', uStageLabel:n=>'선택한 사진 '+n+'장', uSubmitN:n=>n+'장 올리기', uSubmit0:'사진 올리기', uErrId:'인스타 아이디를 입력해주세요', uErrPhoto:'사진을 먼저 선택해주세요', cErrName:'이름 또는 인스타 아이디를 입력해주세요', cErrOpt:'옵션을 선택해주세요', cErrClosed:'마감된 상품입니다', cErrJustClosed:lb=>'‘'+lb+'’ 옵션은 방금 마감되었습니다', cErrLimit:(mine,lim)=>(mine>0?'이미 '+mine+'개 선택하셨어요. ':'')+'이 아이디는 '+lim+'개까지 선택할 수 있어요', toastConfirm:(name,prod,n)=>name+' 님, ‘'+prod+'’ '+(n>1?n+'개 옵션 ':'')+'선택이 확정되었습니다', uploading:n=>'사진 '+n+'장 올리는 중…', uploaded:n=>'사진 '+n+'장 등록 완료', uploadPartial:(ok,total)=>'일부 저장 실패 ('+ok+'/'+total+'장)' },
-    en:{ navMain:'Main', navAdmin:'Admin', vTitle:'Enter Instagram ID', vPh:'@Instagram ID', vEnter:'Enter', vErrEmpty:'Please enter your Instagram ID', vErrNotInvited:'You are not on the invite list.', vErrCheck:'Something went wrong. Please try again in a moment.', cErrDone:"You've used all your available selections.", viewingAs:'Viewing as', change:'Change', left:n=>n+' left', closedShort:'Closed', available:'Available', closedBadge:'CLOSED', deadline:(m,d)=>'~ '+m+'/'+d, uploadLink:'Upload your item photos', emptyMain:'No items yet. Please add items from the admin page.', claimIntro:'First-come, first-served. You will be registered with the info below.', instaId:'Instagram ID', optSelect:'Select option', optMulti:'You can select multiple', copyForm:'Copy format', copyFormBtn:'Copy', cancel:'Cancel', confirm:'Confirm', uSuffix:'· Upload photos', uIntro:'Please upload photos of the item you received. You can upload several at once in full original quality.', optOptional:'Option (optional)', other:'Other', otherPh:'Enter your option', msgLabel:'Message (optional)', msgPh:"Write any message you'd like to leave", priorHint:s=>'Previously selected: '+s, uPick:'Choose photos · several at once', uPickSub:'On mobile pick several from your album · on desktop just drag & drop', uStageLabel:n=>n+(n>1?' photos':' photo')+' selected', uSubmitN:n=>'Upload '+n+(n>1?' photos':' photo'), uSubmit0:'Upload photos', uErrId:'Please enter your Instagram ID', uErrPhoto:'Please choose photos first', cErrName:'Please enter your name or Instagram ID', cErrOpt:'Please select an option', cErrClosed:'This item is closed.', cErrJustClosed:lb=>"'"+lb+"' option just sold out", cErrLimit:(mine,lim)=>(mine>0?'You already selected '+mine+'. ':'')+'This ID can select up to '+lim+'.', toastConfirm:(name,prod,n)=>name+', your selection of '+(n>1?n+' options of ':'')+"'"+prod+"'"+' is confirmed', uploading:n=>'Uploading '+n+(n>1?' photos':' photo')+'…', uploaded:n=>n+(n>1?' photos':' photo')+' uploaded', uploadPartial:(ok,total)=>'Some failed to save ('+ok+'/'+total+')' },
-    zh:{ navMain:'主页', navAdmin:'管理', vTitle:'输入Instagram账号', vPh:'@Instagram账号', vEnter:'进入', vErrEmpty:'请输入Instagram账号', vErrNotInvited:'您不在邀请名单中。', vErrCheck:'出错了，请稍后再试。', cErrDone:'您已用完可选择的数量。', viewingAs:'当前账号', change:'更改', left:n=>'剩'+n+'个', closedShort:'已截止', available:'可选', closedBadge:'已截止', deadline:(m,d)=>'~ '+m+'/'+d+' 截止', uploadLink:'上传收到的商品照片', emptyMain:'暂无商品。请在管理页面添加商品。', claimIntro:'先到先得。将以下方信息进行申请。', instaId:'Instagram账号', optSelect:'选择选项', optMulti:'可选择多个', copyForm:'复制格式', copyFormBtn:'复制', cancel:'取消', confirm:'确认选择', uSuffix:'· 上传照片', uIntro:'请上传您收到的商品照片。可一次上传多张，保持原始画质。', optOptional:'选项（可选）', other:'其他', otherPh:'请输入选项', msgLabel:'留言（可选）', msgPh:'可自由填写您想留下的话', priorHint:s=>'之前选择的选项：'+s, uPick:'选择照片 · 一次多张', uPickSub:'手机可在相册中选择多张 · 电脑可直接拖拽', uStageLabel:n=>'已选'+n+'张照片', uSubmitN:n=>'上传'+n+'张', uSubmit0:'上传照片', uErrId:'请输入Instagram账号', uErrPhoto:'请先选择照片', cErrName:'请输入姓名或Instagram账号', cErrOpt:'请选择选项', cErrClosed:'该商品已截止。', cErrJustClosed:lb=>'“'+lb+'”选项刚刚售罄', cErrLimit:(mine,lim)=>(mine>0?'您已选择'+mine+'个。':'')+'该账号最多可选'+lim+'个', toastConfirm:(name,prod,n)=>name+'，您对“'+prod+'”的'+(n>1?n+'个选项':'')+'选择已确认', uploading:n=>'正在上传'+n+'张照片…', uploaded:n=>'已上传'+n+'张照片', uploadPartial:(ok,total)=>'部分保存失败（'+ok+'/'+total+'）' },
-    tw:{ navMain:'主頁', navAdmin:'管理', vTitle:'輸入Instagram帳號', vPh:'@Instagram帳號', vEnter:'進入', vErrEmpty:'請輸入Instagram帳號', vErrNotInvited:'您不在邀請名單中。', vErrCheck:'發生錯誤，請稍後再試。', cErrDone:'您已用完可選擇的數量。', viewingAs:'目前帳號', change:'更改', left:n=>'剩'+n+'個', closedShort:'已截止', available:'可選', closedBadge:'已截止', deadline:(m,d)=>'~ '+m+'/'+d+' 截止', uploadLink:'上傳收到的商品照片', emptyMain:'尚無商品。請在管理頁面新增商品。', claimIntro:'先到先得。將以下方資訊進行申請。', instaId:'Instagram帳號', optSelect:'選擇選項', optMulti:'可選擇多個', copyForm:'複製格式', copyFormBtn:'複製', cancel:'取消', confirm:'確認選擇', uSuffix:'· 上傳照片', uIntro:'請上傳您收到的商品照片。可一次上傳多張，保持原始畫質。', optOptional:'選項（可選）', other:'其他', otherPh:'請輸入選項', msgLabel:'留言（可選）', msgPh:'可自由填寫您想留下的話', priorHint:s=>'之前選擇的選項：'+s, uPick:'選擇照片 · 一次多張', uPickSub:'手機可在相簿中選擇多張 · 電腦可直接拖曳', uStageLabel:n=>'已選'+n+'張照片', uSubmitN:n=>'上傳'+n+'張', uSubmit0:'上傳照片', uErrId:'請輸入Instagram帳號', uErrPhoto:'請先選擇照片', cErrName:'請輸入姓名或Instagram帳號', cErrOpt:'請選擇選項', cErrClosed:'該商品已截止。', cErrJustClosed:lb=>'「'+lb+'」選項剛剛售罄', cErrLimit:(mine,lim)=>(mine>0?'您已選擇'+mine+'個。':'')+'該帳號最多可選'+lim+'個', toastConfirm:(name,prod,n)=>name+'，您對「'+prod+'」的'+(n>1?n+'個選項':'')+'選擇已確認', uploading:n=>'正在上傳'+n+'張照片…', uploaded:n=>'已上傳'+n+'張照片', uploadPartial:(ok,total)=>'部分儲存失敗（'+ok+'/'+total+'）' }
+    ko:{ navMain:'메인', navAdmin:'관리자', vTitle:'인스타아이디 입력', vPh:'@인스타 아이디', vEnter:'입장하기', vErrEmpty:'인스타 아이디를 입력해주세요', vErrNotInvited:'초대된 분이 아니에요.', vErrCheck:'확인 중 오류가 났어요. 잠시 후 다시 시도해주세요.', cErrDone:'선택 가능한 수량을 모두 사용하셨어요.', viewingAs:'지금 보는 아이디', change:'변경', left:n=>n+'개 남음', closedShort:'마감', available:'선택 가능', closedBadge:'마감', deadline:(m,d)=>'~ '+m+'/'+d+' 마감', uploadLink:'받은 상품 사진 올리기', emptyMain:'아직 등록된 상품이 없습니다. 관리자 페이지에서 상품을 추가해주세요.', claimIntro:'선착순 확정입니다. 아래 정보로 신청됩니다.', instaId:'인스타 아이디', optSelect:'옵션 선택', optMulti:'여러 개 선택할 수 있어요', draftLabel:'시안 사진 (선택)', draftIntro:'참고 시안 이미지를 여러 장 첨부할 수 있어요.', draftAdmin:'시안', copyForm:'복사 양식', copyFormBtn:'양식 복사', cancel:'취소', confirm:'선택 확정', uSuffix:'· 사용 사진 올리기', uIntro:'받으신 상품 사진을 올려주세요. 여러 장을 한 번에, 원본 화질 그대로 올릴 수 있어요.', optOptional:'옵션 (선택)', other:'기타', otherPh:'옵션을 직접 입력해주세요', msgLabel:'전달내용 (선택)', msgPh:'남기고 싶은 말을 자유롭게 적어주세요', priorHint:s=>'전에 선택하신 옵션: '+s, uPick:'사진 선택 · 여러 장 한 번에', uPickSub:'휴대폰은 앨범에서 여러 장 선택 · 컴퓨터는 끌어다 놓아도 돼요', uStageLabel:n=>'선택한 사진 '+n+'장', uSubmitN:n=>n+'장 올리기', uSubmit0:'사진 올리기', uErrId:'인스타 아이디를 입력해주세요', uErrPhoto:'사진을 먼저 선택해주세요', cErrName:'이름 또는 인스타 아이디를 입력해주세요', cErrOpt:'옵션을 선택해주세요', cErrClosed:'마감된 상품입니다', cErrJustClosed:lb=>'‘'+lb+'’ 옵션은 방금 마감되었습니다', cErrLimit:(mine,lim)=>(mine>0?'이미 '+mine+'개 선택하셨어요. ':'')+'이 아이디는 '+lim+'개까지 선택할 수 있어요', toastConfirm:(name,prod,n)=>name+' 님, ‘'+prod+'’ '+(n>1?n+'개 옵션 ':'')+'선택이 확정되었습니다', uploading:n=>'사진 '+n+'장 올리는 중…', uploaded:n=>'사진 '+n+'장 등록 완료', uploadPartial:(ok,total)=>'일부 저장 실패 ('+ok+'/'+total+'장)' },
+    en:{ navMain:'Main', navAdmin:'Admin', vTitle:'Enter Instagram ID', vPh:'@Instagram ID', vEnter:'Enter', vErrEmpty:'Please enter your Instagram ID', vErrNotInvited:'You are not on the invite list.', vErrCheck:'Something went wrong. Please try again in a moment.', cErrDone:"You've used all your available selections.", viewingAs:'Viewing as', change:'Change', left:n=>n+' left', closedShort:'Closed', available:'Available', closedBadge:'CLOSED', deadline:(m,d)=>'~ '+m+'/'+d, uploadLink:'Upload your item photos', emptyMain:'No items yet. Please add items from the admin page.', claimIntro:'First-come, first-served. You will be registered with the info below.', instaId:'Instagram ID', optSelect:'Select option', optMulti:'You can select multiple', draftLabel:'Design draft photos (optional)', draftIntro:'You can attach several reference draft images.', draftAdmin:'Draft', copyForm:'Copy format', copyFormBtn:'Copy', cancel:'Cancel', confirm:'Confirm', uSuffix:'· Upload photos', uIntro:'Please upload photos of the item you received. You can upload several at once in full original quality.', optOptional:'Option (optional)', other:'Other', otherPh:'Enter your option', msgLabel:'Message (optional)', msgPh:"Write any message you'd like to leave", priorHint:s=>'Previously selected: '+s, uPick:'Choose photos · several at once', uPickSub:'On mobile pick several from your album · on desktop just drag & drop', uStageLabel:n=>n+(n>1?' photos':' photo')+' selected', uSubmitN:n=>'Upload '+n+(n>1?' photos':' photo'), uSubmit0:'Upload photos', uErrId:'Please enter your Instagram ID', uErrPhoto:'Please choose photos first', cErrName:'Please enter your name or Instagram ID', cErrOpt:'Please select an option', cErrClosed:'This item is closed.', cErrJustClosed:lb=>"'"+lb+"' option just sold out", cErrLimit:(mine,lim)=>(mine>0?'You already selected '+mine+'. ':'')+'This ID can select up to '+lim+'.', toastConfirm:(name,prod,n)=>name+', your selection of '+(n>1?n+' options of ':'')+"'"+prod+"'"+' is confirmed', uploading:n=>'Uploading '+n+(n>1?' photos':' photo')+'…', uploaded:n=>n+(n>1?' photos':' photo')+' uploaded', uploadPartial:(ok,total)=>'Some failed to save ('+ok+'/'+total+')' },
+    zh:{ navMain:'主页', navAdmin:'管理', vTitle:'输入Instagram账号', vPh:'@Instagram账号', vEnter:'进入', vErrEmpty:'请输入Instagram账号', vErrNotInvited:'您不在邀请名单中。', vErrCheck:'出错了，请稍后再试。', cErrDone:'您已用完可选择的数量。', viewingAs:'当前账号', change:'更改', left:n=>'剩'+n+'个', closedShort:'已截止', available:'可选', closedBadge:'已截止', deadline:(m,d)=>'~ '+m+'/'+d+' 截止', uploadLink:'上传收到的商品照片', emptyMain:'暂无商品。请在管理页面添加商品。', claimIntro:'先到先得。将以下方信息进行申请。', instaId:'Instagram账号', optSelect:'选择选项', optMulti:'可选择多个', draftLabel:'设计稿照片（可选）', draftIntro:'可附上多张参考设计稿图片。', draftAdmin:'设计稿', copyForm:'复制格式', copyFormBtn:'复制', cancel:'取消', confirm:'确认选择', uSuffix:'· 上传照片', uIntro:'请上传您收到的商品照片。可一次上传多张，保持原始画质。', optOptional:'选项（可选）', other:'其他', otherPh:'请输入选项', msgLabel:'留言（可选）', msgPh:'可自由填写您想留下的话', priorHint:s=>'之前选择的选项：'+s, uPick:'选择照片 · 一次多张', uPickSub:'手机可在相册中选择多张 · 电脑可直接拖拽', uStageLabel:n=>'已选'+n+'张照片', uSubmitN:n=>'上传'+n+'张', uSubmit0:'上传照片', uErrId:'请输入Instagram账号', uErrPhoto:'请先选择照片', cErrName:'请输入姓名或Instagram账号', cErrOpt:'请选择选项', cErrClosed:'该商品已截止。', cErrJustClosed:lb=>'“'+lb+'”选项刚刚售罄', cErrLimit:(mine,lim)=>(mine>0?'您已选择'+mine+'个。':'')+'该账号最多可选'+lim+'个', toastConfirm:(name,prod,n)=>name+'，您对“'+prod+'”的'+(n>1?n+'个选项':'')+'选择已确认', uploading:n=>'正在上传'+n+'张照片…', uploaded:n=>'已上传'+n+'张照片', uploadPartial:(ok,total)=>'部分保存失败（'+ok+'/'+total+'）' },
+    tw:{ navMain:'主頁', navAdmin:'管理', vTitle:'輸入Instagram帳號', vPh:'@Instagram帳號', vEnter:'進入', vErrEmpty:'請輸入Instagram帳號', vErrNotInvited:'您不在邀請名單中。', vErrCheck:'發生錯誤，請稍後再試。', cErrDone:'您已用完可選擇的數量。', viewingAs:'目前帳號', change:'更改', left:n=>'剩'+n+'個', closedShort:'已截止', available:'可選', closedBadge:'已截止', deadline:(m,d)=>'~ '+m+'/'+d+' 截止', uploadLink:'上傳收到的商品照片', emptyMain:'尚無商品。請在管理頁面新增商品。', claimIntro:'先到先得。將以下方資訊進行申請。', instaId:'Instagram帳號', optSelect:'選擇選項', optMulti:'可選擇多個', draftLabel:'設計稿照片（可選）', draftIntro:'可附上多張參考設計稿圖片。', draftAdmin:'設計稿', copyForm:'複製格式', copyFormBtn:'複製', cancel:'取消', confirm:'確認選擇', uSuffix:'· 上傳照片', uIntro:'請上傳您收到的商品照片。可一次上傳多張，保持原始畫質。', optOptional:'選項（可選）', other:'其他', otherPh:'請輸入選項', msgLabel:'留言（可選）', msgPh:'可自由填寫您想留下的話', priorHint:s=>'之前選擇的選項：'+s, uPick:'選擇照片 · 一次多張', uPickSub:'手機可在相簿中選擇多張 · 電腦可直接拖曳', uStageLabel:n=>'已選'+n+'張照片', uSubmitN:n=>'上傳'+n+'張', uSubmit0:'上傳照片', uErrId:'請輸入Instagram帳號', uErrPhoto:'請先選擇照片', cErrName:'請輸入姓名或Instagram帳號', cErrOpt:'請選擇選項', cErrClosed:'該商品已截止。', cErrJustClosed:lb=>'「'+lb+'」選項剛剛售罄', cErrLimit:(mine,lim)=>(mine>0?'您已選擇'+mine+'個。':'')+'該帳號最多可選'+lim+'個', toastConfirm:(name,prod,n)=>name+'，您對「'+prod+'」的'+(n>1?n+'個選項':'')+'選擇已確認', uploading:n=>'正在上傳'+n+'張照片…', uploaded:n=>'已上傳'+n+'張照片', uploadPartial:(ok,total)=>'部分儲存失敗（'+ok+'/'+total+'）' }
   }; }
   persistSettings(patch){
     // 입력은 로컬 초안에만 반영하고 '저장' 버튼(saveSettings)을 눌러야 DB에 반영된다.
@@ -757,6 +831,7 @@ class Component extends DCLogic {
     const shipLabels=(p.shipFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
     const optLabels=(p.optFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
     const uploaders=new Set((p.gallery||[]).map(g=>(g.buyer||'').trim().toLowerCase().replace(/^@/,'')).filter(Boolean));
+    const draftMap=new Map(); (p.drafts||[]).forEach(g=>{ const k=(g.buyer||'').trim().toLowerCase().replace(/^@/,'')||'__none__'; if(!draftMap.has(k)) draftMap.set(k,[]); draftMap.get(k).push(g); });
     const isI=b=>/^@|^[a-z0-9._]+$/i.test((b||'').trim());
     const optLineOf=cl=>optLabels.map(lb=>{ const v=((cl.opt||{})[lb]||'').trim(); return v?lb+':'+v:null; }).filter(Boolean).join(' / ');
     const m=new Map();
@@ -773,8 +848,11 @@ class Component extends DCLogic {
       const _text=()=>{ const head=grp.buyer||'(아이디 미입력)'; const lines=rows.map(r=>{ const ol=optLineOf(r.cl); return r.size+(ol?' · '+ol:''); }); return head+(shipLine?'\n'+shipLine:'')+'\n'+lines.join('\n'); };
       const bkey=(grp.buyer||'').trim().toLowerCase().replace(/^@/,'');
       const noPhoto=!!bkey&&!uploaders.has(bkey);
+      const dphs=(draftMap.get(bkey||'__none__')||[]).slice().sort((a,b)=>b.at-a.at);
+      const draftPhotos=dphs.map(g=>({ img:g.url, open:()=>this.setState({lightbox:{imgs:dphs.map(x=>x.url),i:dphs.indexOf(g)}}) }));
       return { buyer:grp.buyer||'(아이디 미입력)', count:rows.length, isInsta:isI(grp.buyer), notInsta:!isI(grp.buyer),
         instaUrl:'https://instagram.com/'+(grp.buyer||'').trim().replace(/^@/,''), hasShip:!!shipLine, shipLine, items, noPhoto,
+        draftPhotos, hasDraft:draftPhotos.length>0,
         copy:()=>this.copyToClip(_text()), _text };
     });
   }
@@ -906,7 +984,7 @@ class Component extends DCLogic {
           const s=(p.sizes||[]).find(x=>(x.label||'옵션')===lb); if(!s||!s.key){ failMsg=L.cErrJustClosed(lb); break; }
           const opt={}; optLabels.forEach(fl=>{ const v=(((this.state.copt||{})[lb]||{})[fl]||'').trim(); if(v) opt[fl]=v; });
           const { error }=await sb.rpc('claim',{ p_product_id:p.id, p_size_key:s.key, p_buyer:name, p_opt:opt, p_ship:ship });
-          if(error){ const m=error.message||''; failMsg = m.indexOf('LIMIT')>=0?L.cErrLimit(mine,lim):(m.indexOf('SOLD_OUT')>=0?L.cErrJustClosed(lb):L.cErrClosed); break; }
+          if(error){ const m=error.message||''; failMsg = m.indexOf('NOT_INVITED')>=0?L.vErrNotInvited:(m.indexOf('LIMIT')>=0?L.cErrDone:(m.indexOf('SOLD_OUT')>=0?L.cErrJustClosed(lb):L.cErrClosed)); break; }
           ok++;
         }
         if(ok>0){ this.setState({claiming:null,cname:'',cErr:'',cship:{},copt:{},csizes:[]}); this.flash(L.toastConfirm(name,(p.name||'상품'),ok)); this._reload(); }
@@ -990,6 +1068,11 @@ class Component extends DCLogic {
       })();
     };
     const uStageThumbs=(st.ustage||[]).map(item=>({ url:item.url, remove:()=>this.setState(s=>{ const it=(s.ustage||[]).find(x=>x.sid===item.sid); if(it) URL.revokeObjectURL(it.url); return {ustage:(s.ustage||[]).filter(x=>x.sid!==item.sid)}; }) }));
+    const cStageFiles=list=>{ const files=Array.from(list||[]).filter(f=>f.type&&f.type.indexOf('image')===0); if(!files.length) return; const add=files.map(f=>({sid:'ct'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),file:f,url:URL.createObjectURL(f)})); this.setState(s=>({cstage:[...(s.cstage||[]),...add],cErr:''})); };
+    const cStage=e=>{ const files=Array.from(e.target.files||[]); e.target.value=''; cStageFiles(files); };
+    const cDrop=e=>{ e.preventDefault(); cStageFiles((e.dataTransfer||{}).files); };
+    const cDragOver=e=>e.preventDefault();
+    const cStageThumbs=(st.cstage||[]).map(item=>({ url:item.url, remove:()=>this.setState(s=>{ const it=(s.cstage||[]).find(x=>x.sid===item.sid); if(it) URL.revokeObjectURL(it.url); return {cstage:(s.cstage||[]).filter(x=>x.sid!==item.sid)}; }) }));
 
     const isInstaId=s=>/^@|^[a-z0-9._]+$/i.test((s||'').trim());
     const safeName=s=>String(s||'').replace(/[\\/:*?"<>|]+/g,'').replace(/^@/,'').trim()||'무제';
