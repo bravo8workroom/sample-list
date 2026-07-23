@@ -570,7 +570,9 @@ class Component extends DCLogic {
       if(eid){ const local=(this.state.products||[]).find(p=>p.id===eid);
         if(local) products=products.some(p=>p.id===eid)?products.map(p=>p.id===eid?local:p):[local,...products]; }
       const patch={ products };
-      if(se.data){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
+      // 설정 탭이 열려 있으면 서버값으로 덮어쓰지 않는다 — 다른 테이블 변경이 부른 reload가
+      // 입력 중이거나 아직 저장 전(persistSettings 500ms 디바운스)인 설정 글자를 지워버리는 버그 방지.
+      if(se.data && this.state.adminTab!=='settings'){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
       this.setState(patch);
     }catch(e){ console.error('reload', e); }
   }
