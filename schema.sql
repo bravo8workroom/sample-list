@@ -206,11 +206,13 @@ create policy settings_write on settings for all
   using (auth.uid() is not null) with check (auth.uid() is not null);
 
 -- ============================================================
---  9) Storage 버킷 sample-photos (public) + 정책
+--  9) Storage 버킷 sample-photos (비공개) + 정책
+--     사진 파일은 관리자(로그인)만 열람 — 앱이 서명주소(signed URL)로 표시.
+--     고객 업로드(insert)는 익명 허용.
 -- ============================================================
 insert into storage.buckets (id, name, public)
-  values ('sample-photos', 'sample-photos', true)
-  on conflict (id) do update set public = true;
+  values ('sample-photos', 'sample-photos', false)
+  on conflict (id) do update set public = false;
 
 drop policy if exists sp_insert on storage.objects;
 drop policy if exists sp_read   on storage.objects;
@@ -218,7 +220,7 @@ drop policy if exists sp_delete on storage.objects;
 create policy sp_insert on storage.objects for insert
   with check (bucket_id = 'sample-photos');
 create policy sp_read on storage.objects for select
-  using (bucket_id = 'sample-photos');
+  using (bucket_id = 'sample-photos' and auth.uid() is not null);
 create policy sp_delete on storage.objects for delete
   using (bucket_id = 'sample-photos' and auth.uid() is not null);
 

@@ -658,7 +658,8 @@ class Component extends DCLogic {
   // ===== Supabase 연동 =====
   _sb(){ if(!this.__sb) this.__sb=window.supabase.createClient('https://zoszumqphwfniankrgio.supabase.co','sb_publishable_zRj6dXRMQ6RJ0hQygLnF1Q_dWy9T9M6'); return this.__sb; }
   _k(){ return 'sz'+Math.random().toString(36).slice(2,9); }
-  _photoUrl(path){ if(!path) return ''; try{ return this._sb().storage.from('sample-photos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; } }
+  // 보관함이 비공개라 공개주소가 없다 — _reload에서 발급한 서명주소(관리자 전용)를 찾아 쓴다.
+  _photoUrl(path){ if(!path) return ''; return (this.__surl||{})[path]||''; }
   _docOf(p){ const { gallery, id, ...rest }=p; return { ...rest, sizes:(p.sizes||[]).map(s=>{ const { claims, ...sr }=s; return { ...sr, key:s.key||this._k() }; }) }; }
   _buildProducts(rows, counts, subs, phs){
     const cmap={}; (counts||[]).forEach(c=>{ (cmap[c.product_id]=cmap[c.product_id]||{})[c.size_key]=c.claimed; });
@@ -676,7 +677,11 @@ class Component extends DCLogic {
         sb.from('settings').select('*').eq('id',1).maybeSingle()
       ]);
       let subs=null, phs=null, buyers=null;
-      if(authed){ const [su,ph,bu]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}) ]); subs=su.data; phs=ph.data; buyers=bu.data; }
+      if(authed){ const [su,ph,bu]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}) ]); subs=su.data; phs=ph.data; buyers=bu.data;
+        // 비공개 보관함: 로그인한 관리자에게만 서명주소(8시간짜리 임시 열람권)를 일괄 발급한다.
+        const paths=[...new Set((phs||[]).map(g=>g.path).filter(Boolean))];
+        if(paths.length){ try{ const {data:sg}=await sb.storage.from('sample-photos').createSignedUrls(paths, 60*60*8); const m={}; (sg||[]).forEach(x=>{ if(x&&x.path&&x.signedUrl) m[x.path]=x.signedUrl; }); this.__surl=m; }catch(e){ console.error('signedUrls', e); } }
+      }
       let products=this._buildProducts(pr.data, ct.data, subs, phs);
       // 편집 중인 상품은 서버값으로 덮어쓰지 않는다 — 실시간 자기-에코 reload가
       // 입력 중이거나 아직 저장 전(persist 500ms 디바운스)인 글자를 지워버리는 버그 방지.
