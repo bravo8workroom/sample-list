@@ -214,6 +214,12 @@ insert into storage.buckets (id, name, public)
   values ('sample-photos', 'sample-photos', false)
   on conflict (id) do update set public = false;
 
+-- 옛 정책(2026-07-23 세팅분) 제거 — 조건 없이 열려 있어 잠금을 무력화했다.
+-- RLS는 OR 판정이라 열린 정책이 하나라도 남으면 나머지를 아무리 잠가도 소용없다.
+drop policy if exists s_pho_read   on storage.objects;
+drop policy if exists s_pho_del    on storage.objects;
+drop policy if exists s_pho_upload on storage.objects;
+
 drop policy if exists sp_insert on storage.objects;
 drop policy if exists sp_read   on storage.objects;
 drop policy if exists sp_delete on storage.objects;
