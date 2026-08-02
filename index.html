@@ -587,7 +587,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 
   <sc-if value="{{ uploadOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;z-index:100;background:rgba(23,23,23,.45);display:flex;align-items:center;justify-content:center;padding:24px">
-      <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:400px;max-height:88vh;overflow:auto;display:flex;flex-direction:column;gap:14px">
         <div style="font-size:17px;font-weight:700;letter-spacing:-.01em">{{ uTitle }} {{ uSuffixLabel }}</div>
         <p style="margin:0;font-size:13px;color:#8a8a86;line-height:1.6">{{ uIntro }}</p>
         <div style="display:flex;align-items:center;gap:8px;background:#f7f7f5;border:1px solid #e3e3e0;border-radius:9px;padding:11px 13px;font-size:13.5px"><span style="color:#8a8a86">{{ instaId }}</span><b style="color:#171717">{{ viewerHandle }}</b></div>
