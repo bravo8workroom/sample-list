@@ -450,6 +450,18 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           <sc-if value="{{ hasUnsent }}"><span style="font-size:11px;color:#c2410c;font-weight:600;white-space:nowrap">알림 대기 {{ unsentCount }}장</span></sc-if>
         </div>
       </div>
+      <sc-if value="{{ hasStor }}">
+        <div style="display:flex;align-items:center;gap:16px;border:1px solid #e3e3e0;background:#fafaf8;border-radius:12px;padding:13px 16px">
+          <div style="display:flex;flex-direction:column;gap:1px;flex:none">
+            <span style="font-size:11px;color:#8a8a86;font-weight:600;white-space:nowrap">저장소 남은 용량</span>
+            <span style="{{ storBigStyle }}">{{ storLeft }}</span>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+            <div style="height:8px;background:#ececea;border-radius:999px;overflow:hidden"><div style="{{ storBarStyle }}"></div></div>
+            <span style="{{ storTextStyle }}">{{ storDetail }}</span>
+          </div>
+        </div>
+      </sc-if>
       <sc-if value="{{ hasPending }}">
         <div style="border:1px solid #f0ddce;background:#fdf7f1;border-radius:12px;padding:4px 4px 4px 4px">
           <button onClick="{{ togglePending }}" style="width:100%;background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:10px;padding:12px 14px">
@@ -484,12 +496,13 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
               <div style="display:flex;gap:8px">
                 <button onClick="{{ g.deleteAll }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;color:#c2410c;cursor:pointer;white-space:nowrap" style-hover="border-color:#c2410c">전체 삭제</button>
                 <button onClick="{{ g.downloadAll }}" style="background:#171717;color:#fff;border:none;border-radius:999px;padding:7px 15px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#3d3d3a">전체 ZIP로 저장</button>
+                <button onClick="{{ g.done }}" style="background:#c2410c;color:#fff;border:none;border-radius:999px;padding:7px 15px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#9a3412">완료</button>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
               <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="0">
                 <div style="border:1px solid #e3e3e0;border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
-                  <div style="aspect-ratio:1/1;background:#ececea;min-height:0;overflow:hidden"><img src="{{ it.img }}" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+                  <div style="aspect-ratio:1/1;background:#ececea;min-height:0;overflow:hidden"><img src="{{ it.img }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block"></div>
                   <div style="padding:10px;display:flex;flex-direction:column;gap:6px">
                     <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;flex-wrap:wrap">
                       <span style="font-weight:600">{{ it.product }}</span>
@@ -505,6 +518,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
                 </div>
               </sc-for>
             </div>
+            <sc-if value="{{ g.hasMore }}"><button onClick="{{ g.showMore }}" style="align-self:center;background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:8px 18px;font-size:12.5px;font-weight:600;color:#3d3d3a;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">{{ g.moreLabel }}</button></sc-if>
           </div>
         </sc-for>
       </sc-if>
@@ -657,7 +671,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], bNewId:'', bNewQty:1, bBulk:'' };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'' };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
@@ -683,8 +697,10 @@ class Component extends DCLogic {
         sb.from('size_counts').select('*'),
         sb.from('settings').select('*').eq('id',1).maybeSingle()
       ]);
-      let subs=null, phs=null, buyers=null;
-      if(authed){ const [su,ph,bu]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}) ]); subs=su.data; phs=ph.data; buyers=bu.data;
+      let subs=null, phs=null, buyers=null, storBytes=null;
+      if(authed){ const [su,ph,bu,us]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}), sb.rpc('storage_usage') ]); subs=su.data; phs=ph.data; buyers=bu.data;
+        // 저장소 사용량 — 마이그레이션(storage_usage 함수) 전이면 조용히 표시 생략
+        if(us && !us.error && us.data!=null) storBytes=Number(us.data);
         // 비공개 보관함: 로그인한 관리자에게만 서명주소(8시간짜리 임시 열람권)를 일괄 발급한다.
         const paths=[...new Set((phs||[]).map(g=>g.path).filter(Boolean))];
         if(paths.length){ try{ const {data:sg}=await sb.storage.from('sample-photos').createSignedUrls(paths, 60*60*8); const m={}; (sg||[]).forEach(x=>{ if(x&&x.path&&x.signedUrl) m[x.path]=x.signedUrl; }); this.__surl=m; }catch(e){ console.error('signedUrls', e); } }
@@ -701,6 +717,7 @@ class Component extends DCLogic {
       if(se.data && this.state.adminTab!=='settings' && !this.state.settingsDirty){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
       // buyers 목록: 아이디 수량관리 탭에서 입력 중(persist 대기)일 땐 서버값으로 덮어쓰지 않는다.
       if(buyers && !this.__bpPending){ patch.buyers=buyers; }
+      if(authed){ patch.storBytes=storBytes; }
       this.setState(patch);
     }catch(e){ console.error('reload', e); }
   }
@@ -1148,10 +1165,17 @@ class Component extends DCLogic {
       if(!gmap.has(key)) gmap.set(key,{buyer:(g.buyer||'').trim()||'(아이디 미입력)', rows:[]});
       gmap.get(key).rows.push({g,gi,p});
     }));
-    const galleryGroups=[...gmap.values()].map(grp=>{
+    const galleryGroups=[...gmap.entries()].map(([gkey,grp])=>{
       const buyer=grp.buyer, rows=grp.rows.slice().sort((a,b)=>b.g.at-a.g.at);
+      // 처음엔 10장만 그리고 '더보기'로 늘린다 — 수십 장을 한 번에 그리면 로딩이 느려서.
+      // ZIP·삭제·완료는 화면에 보이는 장수와 무관하게 전체(rows)를 대상으로 한다.
+      const gShow=(st.gShow||{})[gkey]||10;
+      const shown=rows.slice(0,gShow);
       return {
         buyer, count:rows.length, isInsta:isInstaId(buyer), notInsta:!isInstaId(buyer),
+        hasMore:rows.length>shown.length,
+        moreLabel:'사진 더보기 · 남은 '+(rows.length-shown.length)+'장',
+        showMore:()=>this.setState(s=>({gShow:{...(s.gShow||{}),[gkey]:gShow+20}})),
         instaUrl:'https://instagram.com/'+buyer.replace(/^@/,''),
         downloadAll:async ()=>{
           this.flash(buyer+' 님 사진 '+rows.length+'장 묶는 중…');
@@ -1164,7 +1188,20 @@ class Component extends DCLogic {
           this.flash('ZIP 저장 완료 · '+files.length+'장');
         },
         deleteAll:async()=>{ if(!window.confirm(buyer+' 님의 사진 '+rows.length+'장을 모두 삭제할까요? 되돌릴 수 없습니다.')) return; const sb=this._sb(); const ids=rows.map(r=>r.g.key); const paths=rows.map(r=>r.g.path).filter(Boolean); if(paths.length) await sb.storage.from('sample-photos').remove(paths); await sb.from('photos').delete().in('id',ids); this.flash('사진 '+rows.length+'장 삭제 완료'); this._reload(); },
-        items:rows.map(({g,gi,p})=>({
+        // 완료 = ①명단에서 주소·추가입력 삭제(아이디·옵션명만 남김) ②사진 삭제로 용량 회수.
+        // 명단 정리가 실패하면 사진은 건드리지 않는다 — 재시도할 수 있게.
+        done:async()=>{
+          if(!window.confirm(buyer+' 님을 완료 처리할까요?\n\n· 사진 '+rows.length+'장을 저장소에서 삭제해 용량을 비웁니다\n· 명단에는 인스타 아이디와 옵션명만 남고, 주소 등 배송정보는 지워집니다\n\n전체 ZIP로 저장을 먼저 하셨나요? 되돌릴 수 없습니다.')) return;
+          const sb=this._sb();
+          const { data:cnt, error }=await sb.rpc('anonymize_buyer',{ p_buyer:buyer });
+          if(error){ this.flash('명단 정리 실패 — 사진은 삭제하지 않았습니다: '+error.message); return; }
+          const ids=rows.map(r=>r.g.key); const paths=rows.map(r=>r.g.path).filter(Boolean);
+          if(paths.length) await sb.storage.from('sample-photos').remove(paths);
+          await sb.from('photos').delete().in('id',ids);
+          this.flash(buyer+' 님 완료 · 사진 '+rows.length+'장 삭제, 명단 '+(cnt||0)+'건 정리');
+          this._reload();
+        },
+        items:shown.map(({g,gi,p})=>({
           img:srcOf(g), product:p.name||'이름 없는 상품', size:g.size||'', hasSize:!!g.size,
           msg:g.msg||'', hasMsg:!!(g.msg&&g.msg.trim()),
           time:new Date(g.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),
@@ -1178,6 +1215,7 @@ class Component extends DCLogic {
       const uploaders=new Set((p.gallery||[]).map(g=>(g.buyer||'').trim().toLowerCase().replace(/^@/,'')).filter(Boolean));
       const seen=new Set();
       (p.sizes||[]).forEach(s=>(s.claims||[]).forEach(c=>{
+        if((c.opt||{}).__done) return; // 완료 처리된 신청 — 사진을 지웠어도 '안 올린 사람'에 다시 잡히지 않게
         const orig=(c.buyer||'').trim(); const k=orig.toLowerCase().replace(/^@/,'');
         if(!k||seen.has(k)) return; seen.add(k);
         if(uploaders.has(k)) return;
@@ -1192,6 +1230,17 @@ class Component extends DCLogic {
       copy:()=>this.copyToClip(v.buyer)
     }));
     const copyPending=()=>{ if(!pendingUploaders.length){ this.flash('미제출 인원이 없습니다'); return; } this.copyToClip(pendingUploaders.map(u=>u.buyer).join('\n')); };
+
+    // 저장소 사용량 게이지 — 총량은 Supabase 무료 플랜 1GB 기준 (플랜을 올리면 이 숫자만 바꾸면 됨)
+    const STOR_CAP=1024*1024*1024;
+    const fmtStor=n=>{ const mb=n/1048576; return mb>=1000?(n/STOR_CAP).toFixed(2)+'GB':(mb>=100?String(Math.round(mb)):mb.toFixed(1))+'MB'; };
+    const storPct=st.storBytes==null?0:Math.min(100,Math.round(st.storBytes/STOR_CAP*100));
+    const storWarn=storPct>=80;
+    const storLeft=st.storBytes==null?'':fmtStor(Math.max(0,STOR_CAP-st.storBytes));
+    const storDetail=st.storBytes==null?'':('사용 '+fmtStor(st.storBytes)+' / 1GB ('+storPct+'%) · 가득 차면 손님이 사진을 못 올려요');
+    const storBigStyle='font-size:19px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.25;color:'+(storWarn?'#c2410c':'#171717');
+    const storBarStyle='height:100%;border-radius:999px;background:'+(storWarn?'#c2410c':'#171717')+';width:'+Math.max(2,storPct)+'%';
+    const storTextStyle='font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;color:'+(storWarn?'#c2410c':'#8a8a86');
 
     const unsent=[];
     st.products.forEach(p=>(p.gallery||[]).forEach((g,gi)=>{ if(g&&!g.sent) unsent.push({g,gi,p}); }));
@@ -1255,6 +1304,7 @@ class Component extends DCLogic {
       uSubmitStyle:{flex:2,display:'flex',alignItems:'center',justifyContent:'center',background:uStageThumbs.length?'#171717':'#c8c8c4',color:'#fff',border:'none',borderRadius:'9px',padding:'12px',fontSize:'14px',fontWeight:600,cursor:uStageThumbs.length?'pointer':'not-allowed'},
       closeUpload:()=>{ (this.state.ustage||[]).forEach(s=>URL.revokeObjectURL(s.url)); this.setState({uploading:null,uErr:'',ustage:[],uOver:0,uBig:0,uother:'',umsg:''}); },
       galleryGroups, hasGallery:galleryGroups.length>0, noGallery:galleryGroups.length===0, emailNotify,
+      hasStor:st.storBytes!=null, storLeft, storDetail, storBigStyle, storBarStyle, storTextStyle,
       pendingUploaders, pendingCount:pendingUploaders.length, hasPending:pendingUploaders.length>0,
       showPending:st.showPending, togglePending:()=>this.setState(s=>({showPending:!s.showPending})),
       pendingToggleLabel:st.showPending?'접기 ▲':'아이디 보기 ▼', copyPending,
