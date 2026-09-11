@@ -1,0 +1,24 @@
+# sample-list — 프로젝트 지침 (모든 AI 공용)
+
+> **클로드·코덱스·다른 AI가 함께 읽는 파일이다.** 클로드는 `CLAUDE.md`가 이 파일을 불러온다(`@AGENTS.md`). **규칙은 여기에만 쓴다** — `CLAUDE.md`에 쓰면 다른 AI가 못 본다.
+
+## 무엇인가
+
+샘플 리스트 — 손님이 사진을 올리는 공개 페이지 (GitHub Pages `bravo8workroom.github.io/sample-list` + Supabase). ⚠ 공개 저장소 — 개인정보·열쇠 절대 금지.
+
+## 먼저 읽을 것 (순서대로, 필요한 것만)
+
+| 순서 | 파일 | 언제 |
+|---|---|---|
+| 1 | `~\.claude\CLAUDE.md` — 전역 규칙. **§0-0이 다른 AI용 번역표**(스킬·일꾼·훅을 어떻게 대신하나) | 항상 (코덱스는 `~\.codex\AGENTS.md`가 그리로 보낸다) |
+| 2 | `~\vault-workspace\WORKSPACE_MASTER.md` **§1-2 ④** — 이 프로젝트의 진입점·스택·함정 | 처음 들어왔을 때 |
+| 3 | `~\vault-workspace\handoff\INDEX.md` 맨 위 호출이름 표 — 지금 어디까지 했나 | 이어서 할 때. **인수인계서는 한 번에 하나만** |
+| 4 | `~\vault-workspace\부품서랍\_INDEX.md` 앞부분(Read map)만 | UI·화면을 만들 때만 |
+
+## 이 프로젝트의 스킬 (직원 자리)
+
+없음. 전역 스킬 32개는 `~\vault-workspace\스킬목록.md`에서 찾아 그 `SKILL.md`를 읽고 따른다. 코덱스는 `$이름`으로 부를 수 있다(`~\.agents\skills`에 설치됨).
+
+## 동기화·출고
+
+자동이다 — 10분마다 창고(네이버 박스 git, 원격 `box`)로 올리고, 부팅 때 받는다. **손대지 마라.** 직접 올려야 할 때는 `shipout` 스킬 절차 그대로. 커밋 메시지는 한글.
