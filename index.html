@@ -1481,7 +1481,7 @@ class Component extends DCLogic {
       pw:st.pw, setPw:e=>this.setState({pw:e.target.value,pwErr:''}), pwKey:e=>{ if(e.key==='Enter') login(); }, login,
       pwErr:st.pwErr, hasPwErr:!!st.pwErr,
       cards, hasCards:cards.length>0, noCards:cards.length===0,
-      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],shipFields:[{label:'성함'},{label:'연락처'},{label:'주소'}],optFields:[],deadline:'',perPerson:1,closed:false,draft:true},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
+      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],shipFields:[{label:'성함'},{label:'연락처'},{label:'주소'}],optFields:[{label:'앞면문구'},{label:'뒷면문구'},{label:'고리컬러(골드 또는 실버 중 1택)'}],deadline:'',perPerson:1,closed:false,draft:true},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
       adminTab:st.adminTab,
       tabToProducts:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'products',editId:null}); },
       tabToGallery:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'gallery',editId:null}); },
