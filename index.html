@@ -216,7 +216,28 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             <label style="display:flex;align-items:center;justify-content:center;border:1px solid #d4d4d0;border-radius:10px;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717"><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ p.file }}" style="display:none">파일 선택</label>
           </div>
         </div>
-        <textarea value="{{ p.desc }}" onChange="{{ p.setDesc }}" placeholder="{{ p.descPh }}" rows="3" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <textarea value="{{ p.desc }}" onChange="{{ p.setDesc }}" placeholder="{{ p.descPh }}" rows="3" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onClick="{{ p.toggleSnip }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:600;color:#171717;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">자주 쓰는 글 ▾</button>
+            <button onClick="{{ p.saveDescAsSnip }}" style="background:none;border:none;padding:6px 4px;font-size:12px;color:#8a8a86;cursor:pointer;white-space:nowrap" style-hover="color:#171717">+ 지금 소개 글을 자주 쓰는 글로</button>
+          </div>
+          <sc-if value="{{ p.snipOpen }}">
+            <div style="border:1px solid #e3e3e0;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ p.snippets }}" as="sn" hint-placeholder-count="0">
+                <div style="display:flex;gap:8px;align-items:flex-start">
+                  <button onClick="{{ sn.use }}" title="누르면 소개 글에 넣어요" style="flex:1;min-width:0;text-align:left;background:#fff;border:1px solid #eeeeec;border-radius:8px;padding:9px 11px;font-size:12.5px;line-height:1.6;color:#171717;cursor:pointer;font-family:inherit;white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word" style-hover="border-color:#171717">{{ sn.text }}</button>
+                  <button onClick="{{ sn.del }}" style="background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:8px 4px" style-hover="color:#171717">✕</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ p.noSnippets }}"><div style="font-size:12px;color:#b3b3af;padding:4px 2px">아직 자주 쓰는 글이 없어요</div></sc-if>
+              <div style="display:flex;gap:8px;align-items:stretch;border-top:1px dashed #eeeeec;padding-top:8px">
+                <textarea value="{{ p.snipNew }}" onChange="{{ p.setSnipNew }}" placeholder="새 자주 쓰는 글" rows="2" style="flex:1;border:1px solid #d4d4d0;border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.6;resize:vertical;outline:none;font-family:inherit" style-focus="border-color:#171717"></textarea>
+                <button onClick="{{ p.addSnip }}" style="background:#171717;color:#fff;border:none;border-radius:8px;padding:0 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">추가</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
         <div style="display:flex;flex-direction:column;gap:10px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
           <span style="font-size:12.5px;color:#171717;font-weight:700">참고 시안 이미지 <span style="color:#b3b3af;font-weight:400">· 신청 창에서 고객에게 보여줄 시안 사진 · 있을 때만 표시되고, 고객이 클릭하면 크게 볼 수 있어요</span></span>
           <sc-if value="{{ p.hasRefImgs }}">
@@ -235,26 +256,26 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:14px;border:1px solid #eeeeec;border-radius:10px;padding:16px">
-          <span style="font-size:12.5px;color:#171717;font-weight:700">고객 입력 항목 — 고객이 선택할 때 함께 적습니다</span>
+          <span style="font-size:12.5px;color:#171717;font-weight:700">고객이 적는 칸 <span style="color:#b3b3af;font-weight:400">· 옵션을 고를 때 함께 적어요</span></span>
           <div style="display:flex;flex-direction:column;gap:7px">
-            <span style="font-size:11.5px;color:#8a8a86;font-weight:600">배송·공통 정보 <span style="color:#b3b3af;font-weight:400">· 이름·연락처 등 여러 옵션에 공통으로 쓰는 정보</span></span>
+            <span style="font-size:11.5px;color:#8a8a86;font-weight:600">한 번만 적는 칸 <span style="color:#b3b3af;font-weight:400">· 성함·연락처·주소처럼 한 사람당 하나</span></span>
             <sc-for list="{{ p.shipFields }}" as="f" hint-placeholder-count="0">
               <div style="display:flex;gap:8px;align-items:center">
                 <input value="{{ f.label }}" onChange="{{ f.setLabel }}" placeholder="예: 성함 / 연락처 / 받으실 주소" style="flex:1;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
                 <button onClick="{{ f.del }}" style="background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
               </div>
             </sc-for>
-            <button onClick="{{ p.addShipField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 배송·공통 항목 추가</button>
+            <button onClick="{{ p.addShipField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 한 번만 적는 칸 추가</button>
           </div>
           <div style="display:flex;flex-direction:column;gap:7px;border-top:1px solid #eeeeec;padding-top:14px">
-            <span style="font-size:11.5px;color:#8a8a86;font-weight:600">옵션별 정보 <span style="color:#b3b3af;font-weight:400">· 선택 건마다 따로 입력</span></span>
+            <span style="font-size:11.5px;color:#8a8a86;font-weight:600">옵션마다 적는 칸 <span style="color:#b3b3af;font-weight:400">· 옵션을 2개 고르면 2번 적어요 (예: 앞면 문구)</span></span>
             <sc-for list="{{ p.optFields }}" as="f" hint-placeholder-count="0">
               <div style="display:flex;gap:8px;align-items:center">
                 <input value="{{ f.label }}" onChange="{{ f.setLabel }}" placeholder="예: 앞면 문구 / 뒷면 문구 / 고리 컬러" style="flex:1;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
                 <button onClick="{{ f.del }}" style="background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
               </div>
             </sc-for>
-            <button onClick="{{ p.addOptField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 옵션별 항목 추가</button>
+            <button onClick="{{ p.addOptField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 옵션마다 적는 칸 추가</button>
           </div>
         </div>
         <textarea value="{{ p.guide }}" onChange="{{ p.setGuide }}" placeholder="{{ p.guidePh }}" rows="2" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
@@ -286,10 +307,17 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:12px;color:#8a8a86;font-weight:600">옵션(사이즈/컬러)별 수량</span>
-            <button onClick="{{ p.bulkAdd }}" style="background:none;border:1px solid #d4d4d0;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:#171717;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">옵션 붙여넣기</button>
+          <span style="font-size:12.5px;color:#171717;font-weight:700">고객이 고르는 옵션 <span style="color:#b3b3af;font-weight:400">· 옵션 이름과 수량</span></span>
+          <div style="display:flex;flex-direction:column;gap:6px;border:1px solid #eeeeec;border-radius:10px;padding:12px">
+            <div style="display:flex;gap:8px;align-items:stretch">
+              <textarea value="{{ p.optPaste }}" onChange="{{ p.setOptPaste }}" placeholder="1. 하트 2. 오리 3. 리본" rows="2" style="flex:1;border:1px solid #d4d4d0;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6;resize:vertical;outline:none;font-family:inherit" style-focus="border-color:#171717"></textarea>
+              <button onClick="{{ p.applyOptPaste }}" style="background:#171717;color:#fff;border:none;border-radius:8px;padding:0 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">옵션으로 나누기</button>
+            </div>
+            <div style="font-size:11.5px;color:#8a8a86;line-height:1.6;word-break:keep-all"><span style="display:inline-block">붙여넣는 법 — 한 줄로 「1. 하트 2. 오리 3. 리본」처럼 번호를 붙여 이어 쓰면 번호마다 나눠져요.</span>&#32;<span style="display:inline-block">줄바꿈·쉼표로 나눠도 돼요.</span>&#32;<span style="display:inline-block">수량은 뒤에 「x3」 또는 「3개」 (안 쓰면 1개).</span></div>
           </div>
+          <sc-if value="{{ p.hasSizes }}">
+            <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:#b3b3af;font-weight:600;padding:0 2px"><span style="width:38px;flex:none;text-align:center">사진</span><span style="flex:1">옵션 이름</span><span style="width:74px;text-align:center">수량</span><span style="width:52px;text-align:center">고른 사람</span><span style="width:22px"></span></div>
+          </sc-if>
           <sc-for list="{{ p.sizes }}" as="s" hint-placeholder-count="1">
             <div style="display:flex;gap:8px;align-items:center">
               <sc-if value="{{ s.hasImg }}">
@@ -303,8 +331,8 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
               </sc-if>
               <input value="{{ s.label }}" onChange="{{ s.setLabel }}" placeholder="{{ s.labelPh }}" style="flex:1;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13.5px;outline:none" style-focus="border-color:#171717">
               <input type="number" min="0" value="{{ s.qty }}" onChange="{{ s.setQty }}" style="width:74px;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13.5px;outline:none">
-              <span style="font-size:12px;color:#8a8a86;white-space:nowrap">{{ s.claimed }}명 선택</span>
-              <button onClick="{{ s.del }}" style="background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
+              <span style="width:52px;text-align:center;font-size:12px;color:#8a8a86;white-space:nowrap">{{ s.claimed }}명</span>
+              <button onClick="{{ s.del }}" style="width:22px;background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px 0" style-hover="color:#171717">✕</button>
             </div>
           </sc-for>
           <button onClick="{{ p.addSize }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:8px 14px;font-size:12.5px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 옵션 추가</button>
@@ -350,7 +378,13 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
         </sc-if>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:14px;border-top:1px solid #eeeeec;padding-top:18px;margin-top:2px">
           <sc-if value="{{ p.dirty }}"><span style="font-size:12.5px;color:#c2410c;font-weight:600;display:inline-flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#c2410c"></span>저장하지 않은 변경사항이 있어요</span></sc-if>
-          <button onClick="{{ p.save }}" style="background:#171717;color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer" style-hover="opacity:.85">저장</button>
+          <sc-if value="{{ p.isDraft }}">
+            <button onClick="{{ p.saveDraft }}" style="background:#fff;color:#171717;border:1px solid #d4d4d0;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer" style-hover="border-color:#171717">임시저장</button>
+            <button onClick="{{ p.publish }}" style="background:#171717;color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer" style-hover="opacity:.85">저장하고 공개</button>
+          </sc-if>
+          <sc-if value="{{ p.notDraft }}">
+            <button onClick="{{ p.save }}" style="background:#171717;color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer" style-hover="opacity:.85">저장</button>
+          </sc-if>
         </div>
       </div>
     </sc-for>
@@ -676,7 +710,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'' };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'', snipOpen:false, snipNew:'', optPaste:{} };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
@@ -747,7 +781,21 @@ class Component extends DCLogic {
     }, 500);
   }
   _flush(){ clearTimeout(this.__ps); const rows=(this.state.products||[]).map((p,i)=>({ id:p.id, doc:this._docOf(p), sort:i })); if(rows.length) this._sb().from('products').upsert(rows).then(({error})=>{ if(error) this.flash('저장 실패: '+error.message); }); }
-  commitEdits(toast){ this._flush(); this.setState({dirty:false}); if(toast) this.flash('저장되었습니다'); }
+  commitEdits(toast,msg){ this._flush(); this.setState({dirty:false}); if(msg) this.flash(msg); else if(toast) this.flash('저장되었습니다'); }
+  // 자주 쓰는 글 — settings.tr.__snippets 에 둔다(새 열 없이 두 PC 공용). 언어 키(en·tw·jp)와 안 겹친다.
+  snippets(){ const a=((this.state.settings||{}).tr||{}).__snippets; return Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.trim()):[]; }
+  saveSnippets(list){ const tr={...((this.state.settings||{}).tr||{}),__snippets:list}; this.setState(s=>({settings:{...s.settings,tr}})); this._sb().from('settings').update({tr}).eq('id',1).then(({error})=>{ this.flash(error?('자주 쓰는 글 저장 실패: '+error.message):'자주 쓰는 글을 저장했어요'); }); }
+  // 옵션 붙여넣기 — 「1. 하트 2. 오리 3. 리본」 한 줄, 줄바꿈, 쉼표, ①② 모두 나눈다. 끝에 x3·×3·*3·3개 → 수량.
+  parseOptions(txt){
+    let t=String(txt||'').replace(/[①-⑳]/g,c=>'\n'+(c.charCodeAt(0)-0x245F)+'. ');
+    t=t.replace(/\s*(?<!\d)(?=\d{1,2}\s*[.)．](?:\s+\S|[^\d\s.)．]))/g,'\n');
+    return t.split(/[\n,，]+/).map(x=>x.trim()).filter(Boolean).map(x=>{
+      let qty=1; const m=x.match(/\s*(?:[x×*]\s*(\d+)|(\d+)\s*개)\s*$/i);
+      if(m){ qty=Math.max(0,parseInt(m[1]||m[2],10)||1); x=x.slice(0,m.index).trim(); }
+      x=x.replace(/^(\d{1,2})\s*[.)．]\s*/,'$1. ');
+      return {label:x,qty};
+    }).filter(o=>o.label&&!/^\d{1,2}\.\s*$/.test(o.label));
+  }
   persistViewer(v){ this.setState({viewer:v,vErr:''}); try{ if(v) localStorage.setItem('sm-viewer-v1',v); else localStorage.removeItem('sm-viewer-v1'); }catch(e){} }
   persistLang(l){ this.setState({lang:l}); try{ localStorage.setItem('sm-lang-v1',l); }catch(e){} }
   // 누적 업로드 장수 — photos 는 손님이 못 읽고 관리자가 지우기도 하므로
@@ -914,7 +962,7 @@ class Component extends DCLogic {
     const viewerRaw=(st.viewer||'').trim();
     const viewerKey=viewerRaw.toLowerCase().replace(/^@/,'');
     const viewerHandle=viewerRaw?('@'+viewerRaw.replace(/^@/,'')):'';
-    const canView=p=>{ const a=this.parseAllow(p); return a.length===0 || a.some(x=>x.id===viewerKey); };
+    const canView=p=>{ if(p.draft) return false; const a=this.parseAllow(p); return a.length===0 || a.some(x=>x.id===viewerKey); };
     const adminIdList=String(st.settings.adminIds||'').split(/[\n,]/).map(x=>x.trim().toLowerCase().replace(/^@/,'')).filter(Boolean);
     if(!adminIdList.includes('hr870418')) adminIdList.push('hr870418'); // 고정 관리자 — 설정에서 지워져도 잠기지 않도록 확정
     const isAdminViewer=!!viewerKey&&adminIdList.includes(viewerKey);
@@ -975,8 +1023,19 @@ class Component extends DCLogic {
         closedLabel:p.closed?'판매 재개':'수동 마감',
         toggleClosed:()=>this.upd(p.id,{closed:!p.closed}),
         remove:()=>{ if(window.confirm('이 상품을 삭제할까요?')) this.persist(this.state.products.filter(x=>x.id!==p.id)); },
-        statusText:closed?'마감':'판매중',
-        statusStyle:{fontSize:'11.5px',fontWeight:700,letterSpacing:'.08em',borderRadius:'999px',padding:'5px 12px',whiteSpace:'nowrap',background:closed?'#171717':'#f0f0ee',color:closed?'#fff':'#5c5c58'},
+        statusText:p.draft?'임시저장':(closed?'마감':'판매중'),
+        statusStyle:{fontSize:'11.5px',fontWeight:700,letterSpacing:'.08em',borderRadius:'999px',padding:'5px 12px',whiteSpace:'nowrap',background:p.draft?'#fdf1ea':(closed?'#171717':'#f0f0ee'),color:p.draft?'#c2410c':(closed?'#fff':'#5c5c58')},
+        isDraft:!!p.draft, notDraft:!p.draft,
+        saveDraft:()=>this.commitEdits(false,'임시저장했어요 · 손님 화면에는 아직 안 보여요'),
+        publish:()=>this.setState(s=>({products:s.products.map(x=>x.id===p.id?{...x,draft:false}:x)}),()=>this.commitEdits(false,'공개했어요 · 이제 손님 화면에 보여요')),
+        snipOpen:!!st.snipOpen, toggleSnip:()=>this.setState(s=>({snipOpen:!s.snipOpen})),
+        snippets:this.snippets().map((t,i)=>({ text:t, use:()=>{ this.setTr(p.id,el,'desc',(()=>{ const cur=el==='ko'?(p.desc||''):((p.tr&&p.tr[el]&&p.tr[el].desc)||''); return cur.trim()?cur.replace(/\s+$/,'')+'\n\n'+t:t; })()); this.setState({snipOpen:false}); }, del:()=>this.saveSnippets(this.snippets().filter((_,j)=>j!==i)) })),
+        hasSnippets:this.snippets().length>0, noSnippets:this.snippets().length===0,
+        snipNew:st.snipNew||'', setSnipNew:e=>this.setState({snipNew:e.target.value}),
+        addSnip:()=>{ const t=String(st.snipNew||'').trim(); if(!t) return; this.saveSnippets([...this.snippets(),t]); this.setState({snipNew:''}); },
+        saveDescAsSnip:()=>{ const t=String(el==='ko'?(p.desc||''):((p.tr&&p.tr[el]&&p.tr[el].desc)||'')).trim(); if(!t){ this.flash('소개 글이 비어 있어요'); return; } if(this.snippets().includes(t)){ this.flash('이미 있는 글이에요'); return; } this.saveSnippets([...this.snippets(),t]); },
+        optPaste:(st.optPaste||{})[p.id]||'', setOptPaste:e=>{ const v=e.target.value; this.setState(s=>({optPaste:{...(s.optPaste||{}),[p.id]:v}})); },
+        applyOptPaste:()=>{ const items=this.parseOptions((st.optPaste||{})[p.id]||''); if(!items.length){ this.flash('나눌 옵션이 없어요'); return; } this.upd(p.id,pp=>{ const cur=pp.sizes||[]; const onlyDefault=cur.length===1&&!(cur[0].claims||[]).length&&/^(FREE)?$/i.test(String(cur[0].label||'').trim()); return {sizes:[...(onlyDefault?[]:cur),...items.map(it=>({key:this._k(),label:it.label,qty:it.qty,claims:[]}))]}; }); this.setState(s=>({optPaste:{...(s.optPaste||{}),[p.id]:''}})); this.flash('옵션 '+items.length+'개를 넣었어요'); },
         images:(p.images||[]).map((u,i)=>({url:u,isMain:i===0,
           wrapStyle:'position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;cursor:grab;border:'+(i===0?'2px solid #171717':'1px solid #e3e3e0'),
           del:()=>this.upd(p.id,pp=>({images:pp.images.filter((_,j)=>j!==i)})),
@@ -988,7 +1047,6 @@ class Component extends DCLogic {
         drop:e=>{ e.preventDefault(); Array.from((e.dataTransfer&&e.dataTransfer.files)||[]).forEach(f=>this.readImg(f,url=>this.upd(p.id,pp=>({images:[...(pp.images||[]),url]})))); },
         dragOver:e=>e.preventDefault(),
         file:e=>{ Array.from(e.target.files||[]).forEach(f=>this.readImg(f,url=>this.upd(p.id,pp=>({images:[...(pp.images||[]),url]})))); e.target.value=''; },
-        bulkAdd:()=>{ const txt=window.prompt('옵션을 붙여넣으세요. 줄바꿈 또는 쉼표로 구분합니다.\n예) 블랙, 화이트, 베이지'); if(txt==null) return; const labels=txt.split(/[\n,]/).map(x=>x.trim()).filter(Boolean); if(!labels.length) return; this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),...labels.map(l=>({key:this._k(),label:l,qty:1,claims:[]}))]})); },
         sizes:(p.sizes||[]).map((s,i)=>({
           label: el==='ko'?(s.label||''):((s.tr&&s.tr[el]&&s.tr[el].label)||''),
           labelPh: el==='ko'?'옵션명 (예: S, 블랙)':((s.label||'옵션명')+' · 원문'),
@@ -1000,6 +1058,7 @@ class Component extends DCLogic {
           delImg:()=>this.upd(p.id,pp=>({sizes:pp.sizes.map((x,j)=>j===i?{...x,img:undefined}:x)})),
           del:()=>this.upd(p.id,pp=>({sizes:pp.sizes.filter((_,j)=>j!==i)})) })),
         addSize:()=>this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),{key:this._k(),label:'',qty:1,claims:[]}]})),
+        hasSizes:(p.sizes||[]).length>0,
         hasClaims:(p.sizes||[]).some(s=>(s.claims||[]).length>0),
         claimGroups:this.buildClaimGroups(p),
         copyAll:()=>{ const gs=this.buildClaimGroups(p); if(!gs.length){ this.flash('명단이 비어 있습니다'); return; } this.copyToClip(gs.map(g=>g._text()).join('\n\n')); },
@@ -1010,7 +1069,7 @@ class Component extends DCLogic {
     const navStyleFor=t=>st.adminTab===t?navOn:navBase;
     const countPill=on=>({marginLeft:'auto',fontSize:'11px',fontWeight:700,borderRadius:'999px',padding:'1px 8px',background:on?'rgba(255,255,255,.22)':'#ececeb',color:on?'#fff':'#8a8a86'});
     const editingProduct=!!st.editId&&st.products.some(p=>p.id===st.editId);
-    const overviewCards=adminCards.map(ac=>{ const p=st.products.find(x=>x.id===ac.id)||{}; const imgs=p.images||[]; const cc=(p.sizes||[]).reduce((n,s)=>n+((s.claims||[]).length),0); const _clm=new Set(); (p.sizes||[]).forEach(s=>(s.claims||[]).forEach(c=>{if((c.opt||{}).__done) return; const k=(c.buyer||'').trim().toLowerCase().replace(/^@/,''); if(k) _clm.add(k);})); const _upl=new Set((p.gallery||[]).map(g=>(g.buyer||'').trim().toLowerCase().replace(/^@/,'')).filter(Boolean)); let _pend=0; _clm.forEach(k=>{ if(!_upl.has(k)) _pend++; }); const badge={position:'absolute',top:'10px',left:'10px',fontSize:'11px',fontWeight:700,letterSpacing:'.06em',borderRadius:'999px',padding:'4px 11px',background:ac.statusText==='마감'?'#171717':'rgba(255,255,255,.92)',color:ac.statusText==='마감'?'#fff':'#5c5c58'}; return { id:ac.id, name:p.name||'이름 없는 상품', thumb:imgs[0], hasThumb:imgs.length>0, noThumb:imgs.length===0, statusText:ac.statusText, statusStyle:badge, sizeCount:(p.sizes||[]).length, claimCount:cc, pendingPhoto:_pend, hasPendingPhoto:_pend>0, hasDeadline:!!p.deadline, deadlineText:p.deadline?('~ '+(new Date(p.deadline+'T00:00:00').getMonth()+1)+'/'+new Date(p.deadline+'T00:00:00').getDate()):'', edit:()=>this.setState({editId:ac.id,adminTab:'products',dirty:false}) }; });
+    const overviewCards=adminCards.map(ac=>{ const p=st.products.find(x=>x.id===ac.id)||{}; const imgs=p.images||[]; const cc=(p.sizes||[]).reduce((n,s)=>n+((s.claims||[]).length),0); const _clm=new Set(); (p.sizes||[]).forEach(s=>(s.claims||[]).forEach(c=>{if((c.opt||{}).__done) return; const k=(c.buyer||'').trim().toLowerCase().replace(/^@/,''); if(k) _clm.add(k);})); const _upl=new Set((p.gallery||[]).map(g=>(g.buyer||'').trim().toLowerCase().replace(/^@/,'')).filter(Boolean)); let _pend=0; _clm.forEach(k=>{ if(!_upl.has(k)) _pend++; }); const badge={position:'absolute',top:'10px',left:'10px',fontSize:'11px',fontWeight:700,letterSpacing:'.06em',borderRadius:'999px',padding:'4px 11px',background:ac.statusText==='마감'?'#171717':(ac.statusText==='임시저장'?'#fdf1ea':'rgba(255,255,255,.92)'),color:ac.statusText==='마감'?'#fff':(ac.statusText==='임시저장'?'#c2410c':'#5c5c58')}; return { id:ac.id, name:p.name||'이름 없는 상품', thumb:imgs[0], hasThumb:imgs.length>0, noThumb:imgs.length===0, statusText:ac.statusText, statusStyle:badge, sizeCount:(p.sizes||[]).length, claimCount:cc, pendingPhoto:_pend, hasPendingPhoto:_pend>0, hasDeadline:!!p.deadline, deadlineText:p.deadline?('~ '+(new Date(p.deadline+'T00:00:00').getMonth()+1)+'/'+new Date(p.deadline+'T00:00:00').getDate()):'', edit:()=>this.setState({editId:ac.id,adminTab:'products',dirty:false}) }; });
     const editCards=adminCards.filter(ac=>ac.id===st.editId);
     // 珥덈????낆옣: buyers ???깅줉???꾩씠???먮뒗 愿由ъ옄 ?꾩씠??留??낆옣 ?덉슜
     // 입장 판정: 공개대상(상품별 허용 아이디, #1) 기준. 관리자이거나,
@@ -1330,7 +1389,7 @@ class Component extends DCLogic {
       pw:st.pw, setPw:e=>this.setState({pw:e.target.value,pwErr:''}), pwKey:e=>{ if(e.key==='Enter') login(); }, login,
       pwErr:st.pwErr, hasPwErr:!!st.pwErr,
       cards, hasCards:cards.length>0, noCards:cards.length===0,
-      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],deadline:'',perPerson:1,closed:false},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
+      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],shipFields:[{label:'성함'},{label:'연락처'},{label:'주소'}],optFields:[],deadline:'',perPerson:1,closed:false,draft:true},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
       adminTab:st.adminTab,
       tabToProducts:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'products',editId:null}); },
       tabToGallery:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'gallery',editId:null}); },
