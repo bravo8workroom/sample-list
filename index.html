@@ -307,7 +307,10 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <span style="font-size:12.5px;color:#171717;font-weight:700">고객이 고르는 옵션 <span style="color:#b3b3af;font-weight:400">· 옵션 이름과 수량</span></span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12.5px;color:#171717;font-weight:700">고객이 고르는 옵션 <span style="color:#b3b3af;font-weight:400">· 옵션 이름과 수량</span></span>
+            <button onClick="{{ p.openCrop }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:600;color:#171717;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">사진 한 장에서 옵션 사진 자르기</button>
+          </div>
           <div style="display:flex;flex-direction:column;gap:6px;border:1px solid #eeeeec;border-radius:10px;padding:12px">
             <div style="display:flex;gap:8px;align-items:stretch">
               <textarea value="{{ p.optPaste }}" onChange="{{ p.setOptPaste }}" placeholder="1. 하트 2. 오리 3. 리본" rows="2" style="flex:1;border:1px solid #d4d4d0;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6;resize:vertical;outline:none;font-family:inherit" style-focus="border-color:#171717"></textarea>
@@ -691,6 +694,39 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
     </div>
   </sc-if>
 
+  <sc-if value="{{ cropOpen }}" hint-placeholder-val="{{ false }}">
+    <div onPointerMove="{{ cropMove }}" onPointerUp="{{ cropUp }}" style="position:fixed;inset:0;z-index:120;background:rgba(23,23,23,.6);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto">
+      <div style="background:#fff;border-radius:14px;padding:18px;width:min(940px,100%);display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-size:15px;font-weight:700">한 장에서 옵션 사진 자르기</span>
+          <button onClick="{{ cropClose }}" style="width:34px;height:34px;border-radius:50%;border:none;background:#f0f0ee;color:#171717;font-size:15px;cursor:pointer">✕</button>
+        </div>
+        <sc-if value="{{ cropNoImg }}">
+          <div style="display:flex;gap:10px;align-items:stretch">
+            <div tabIndex="0" onPaste="{{ cropPaste }}" onDrop="{{ cropDrop }}" onDragOver="{{ cropDragOver }}" style="flex:1;border:1.5px dashed #d4d4d0;border-radius:10px;padding:40px 16px;display:flex;align-items:center;justify-content:center;color:#8a8a86;font-size:13px;cursor:text;outline:none;text-align:center" style-focus="border-color:#171717;color:#171717">여기를 클릭한 뒤 Ctrl+V 로 사진 한 장 붙여넣기 (드래그도 가능)</div>
+            <label style="display:flex;align-items:center;justify-content:center;border:1px solid #d4d4d0;border-radius:10px;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717"><input type="file" accept="image/*" onChange="{{ cropFile }}" style="display:none">파일 선택</label>
+          </div>
+        </sc-if>
+        <sc-if value="{{ cropHasImg }}">
+          <div id="cropStage" style="position:relative;align-self:center;display:inline-block;touch-action:none;user-select:none;line-height:0">
+            <img src="{{ cropSrc }}" style="display:block;max-width:100%;max-height:72vh;pointer-events:none;-webkit-user-drag:none">
+            <sc-for list="{{ cropBoxes }}" as="b" hint-placeholder-count="0">
+              <div onPointerDown="{{ b.down }}" style="{{ b.style }}">
+                <span style="position:absolute;top:-1px;left:-1px;background:#171717;color:#fff;font-size:11.5px;font-weight:700;line-height:1.4;padding:2px 7px;border-radius:0 0 6px 0;white-space:nowrap;pointer-events:none">{{ b.label }}</span>
+                <span onPointerDown="{{ b.resize }}" style="position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;border-radius:4px;background:#171717;border:2px solid #fff;cursor:nwse-resize"></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button onClick="{{ cropReset }}" style="background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;color:#171717;cursor:pointer" style-hover="border-color:#171717">칸 다시 나누기</button>
+            <button onClick="{{ cropNewImg }}" style="background:none;border:none;padding:8px 6px;font-size:12.5px;color:#8a8a86;cursor:pointer" style-hover="color:#171717">사진 바꾸기</button>
+            <button onClick="{{ cropApplyBtn }}" style="margin-left:auto;background:#171717;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer" style-hover="opacity:.85">옵션 사진으로 넣기</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeLightbox }}" style="position:fixed;inset:0;z-index:130;background:rgba(23,23,23,.82);display:flex;align-items:center;justify-content:center;padding:32px">
       <img src="{{ lightboxImg }}" onClick="{{ lightboxImgClick }}" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.4)">
@@ -710,7 +746,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'', snipOpen:false, snipNew:'', optPaste:{} };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'', snipOpen:false, snipNew:'', optPaste:{}, crop:null };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
@@ -858,6 +894,43 @@ class Component extends DCLogic {
       cb(cv.toDataURL('image/jpeg',.82));
     }; im.src=rd.result; };
     rd.readAsDataURL(file);
+  }
+  // 한 장에서 옵션 사진 자르기 — 원본은 2400px 까지만 들고, 칸(0~1 비율)마다 900px jpeg 로 잘라 옵션 사진에 넣는다.
+  cropGrid(n,iw,ih){
+    let best=1,bd=1e9; for(let c=1;c<=n;c++){ const r=Math.ceil(n/c), d=Math.abs(Math.log((iw/c)/(ih/r))); if(d<bd){bd=d;best=c;} }
+    const cols=best, rows=Math.ceil(n/cols), cw=1/cols, ch=1/rows, pad=.04;
+    return Array.from({length:n},(_,i)=>({ x:(i%cols)*cw+cw*pad, y:Math.floor(i/cols)*ch+ch*pad, w:cw*(1-2*pad), h:ch*(1-2*pad) }));
+  }
+  cropLoad(file){
+    if(!file||!file.type||file.type.indexOf('image')!==0) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ const im=new Image(); im.onload=()=>{
+      const sc=Math.min(1,2400/Math.max(im.width,im.height)), cv=document.createElement('canvas');
+      cv.width=Math.round(im.width*sc)||1; cv.height=Math.round(im.height*sc)||1; cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      this.setState(s=>{ if(!s.crop) return {}; const p=s.products.find(x=>x.id===s.crop.pid); const n=((p&&p.sizes)||[]).length;
+        return {crop:{...s.crop,src:cv.toDataURL('image/jpeg',.9),iw:cv.width,ih:cv.height,boxes:this.cropGrid(n,cv.width,cv.height)}}; });
+    }; im.src=rd.result; };
+    rd.readAsDataURL(file);
+  }
+  cropApply(){
+    const c=this.state.crop; if(!c||!c.src) return;
+    const im=new Image(); im.onload=()=>{
+      const imgs=c.boxes.map(b=>{ const sw=Math.max(1,b.w*im.width), sh=Math.max(1,b.h*im.height), sc=Math.min(1,900/Math.max(sw,sh));
+        const cv=document.createElement('canvas'); cv.width=Math.round(sw*sc)||1; cv.height=Math.round(sh*sc)||1;
+        cv.getContext('2d').drawImage(im,b.x*im.width,b.y*im.height,sw,sh,0,0,cv.width,cv.height); return cv.toDataURL('image/jpeg',.85); });
+      this.upd(c.pid,pp=>({sizes:(pp.sizes||[]).map((s,i)=>imgs[i]?{...s,img:imgs[i]}:s)}));
+      this.setState({crop:null}); this.flash('옵션 사진 '+imgs.length+'장을 넣었어요');
+    }; im.src=c.src;
+  }
+  cropDown(e,i,mode){
+    if(e.stopPropagation) e.stopPropagation(); if(e.preventDefault) e.preventDefault();
+    const st=document.getElementById('cropStage'); const c=this.state.crop; if(!st||!c) return;
+    const r=st.getBoundingClientRect(); this._cd={i,mode,sx:e.clientX,sy:e.clientY,b0:{...c.boxes[i]},rw:r.width,rh:r.height};
+  }
+  cropMove(e){
+    const d=this._cd; if(!d) return; const dx=(e.clientX-d.sx)/d.rw, dy=(e.clientY-d.sy)/d.rh, b=d.b0, cl=(v,a,z)=>Math.min(z,Math.max(a,v));
+    const nb=d.mode==='size'?{...b,w:cl(b.w+dx,.03,1-b.x),h:cl(b.h+dy,.03,1-b.y)}:{...b,x:cl(b.x+dx,0,1-b.w),y:cl(b.y+dy,0,1-b.h)};
+    this.setState(s=>s.crop?{crop:{...s.crop,boxes:s.crop.boxes.map((x,j)=>j===d.i?nb:x)}}:{});
   }
   readOriginal(file,cb){
     if(!file||!file.type||file.type.indexOf('image')!==0) return;
@@ -1059,6 +1132,7 @@ class Component extends DCLogic {
           del:()=>this.upd(p.id,pp=>({sizes:pp.sizes.filter((_,j)=>j!==i)})) })),
         addSize:()=>this.upd(p.id,pp=>({sizes:[...(pp.sizes||[]),{key:this._k(),label:'',qty:1,claims:[]}]})),
         hasSizes:(p.sizes||[]).length>0,
+        openCrop:()=>{ if(!(p.sizes||[]).length){ this.flash('옵션을 먼저 넣어 주세요'); return; } this.setState({crop:{pid:p.id,src:'',iw:0,ih:0,boxes:[]}}); },
         hasClaims:(p.sizes||[]).some(s=>(s.claims||[]).length>0),
         claimGroups:this.buildClaimGroups(p),
         copyAll:()=>{ const gs=this.buildClaimGroups(p); if(!gs.length){ this.flash('명단이 비어 있습니다'); return; } this.copyToClip(gs.map(g=>g._text()).join('\n\n')); },
@@ -1418,6 +1492,20 @@ class Component extends DCLogic {
       setCname:e=>{ const v=e.target.value; this.setState(s=>{ let cship=s.cship||{}; const key=v.trim().toLowerCase(); if(key&&s.claiming){ const p=s.products.find(x=>x.id===s.claiming.pid); if(p){ const prev=(p.sizes||[]).flatMap(sz=>sz.claims||[]).filter(c=>(c.buyer||'').trim().toLowerCase()===key).sort((a,b)=>b.at-a.at)[0]; if(prev&&prev.ship){ const merged={...prev.ship}; Object.keys(cship).forEach(k=>{ if(cship[k]) merged[k]=cship[k]; }); cship=merged; } } } return {cname:v,cErr:'',cship}; }); },
       cErr:st.cErr, hasCErr:!!st.cErr, confirmClaim,
       toast:st.toast, hasToast:!!st.toast,
+      cropOpen:!!st.crop, cropNoImg:!!st.crop&&!st.crop.src, cropHasImg:!!(st.crop&&st.crop.src), cropSrc:(st.crop&&st.crop.src)||'',
+      cropBoxes:(()=>{ const c=st.crop; if(!c||!c.src) return []; const p=st.products.find(x=>x.id===c.pid); const sz=(p&&p.sizes)||[];
+        return c.boxes.map((b,i)=>({ label:(sz[i]&&sz[i].label)||('옵션 '+(i+1)),
+          style:'position:absolute;left:'+(b.x*100)+'%;top:'+(b.y*100)+'%;width:'+(b.w*100)+'%;height:'+(b.h*100)+'%;border:2px solid #fff;box-shadow:0 0 0 1px #171717;background:rgba(255,255,255,.08);cursor:move;box-sizing:border-box',
+          down:e=>this.cropDown(e,i,'move'), resize:e=>this.cropDown(e,i,'size') })); })(),
+      cropMove:e=>this.cropMove(e), cropUp:()=>{ this._cd=null; },
+      cropClose:()=>{ this._cd=null; this.setState({crop:null}); },
+      cropPaste:e=>{ const items=(e.clipboardData&&e.clipboardData.items)||[]; for(const it of items){ if(it.type&&it.type.indexOf('image')===0){ e.preventDefault(); this.cropLoad(it.getAsFile()); break; } } },
+      cropDrop:e=>{ e.preventDefault(); const f=((e.dataTransfer&&e.dataTransfer.files)||[])[0]; if(f) this.cropLoad(f); },
+      cropDragOver:e=>e.preventDefault(),
+      cropFile:e=>{ const f=(e.target.files||[])[0]; if(f) this.cropLoad(f); e.target.value=''; },
+      cropReset:()=>this.setState(s=>{ const c=s.crop; if(!c) return {}; const p=s.products.find(x=>x.id===c.pid); return {crop:{...c,boxes:this.cropGrid(((p&&p.sizes)||[]).length,c.iw,c.ih)}}; }),
+      cropNewImg:()=>this.setState(s=>s.crop?{crop:{...s.crop,src:'',boxes:[]}}:{}),
+      cropApplyBtn:()=>this.cropApply(),
       lightboxOpen:!!st.lightbox,
       lightboxImg:(()=>{ const lb=st.lightbox; if(!lb||!lb.imgs.length) return ''; const n=lb.imgs.length; return lb.imgs[(((lb.i%n)+n)%n)]; })(),
       lightboxMulti:!!st.lightbox&&st.lightbox.imgs.length>1,
