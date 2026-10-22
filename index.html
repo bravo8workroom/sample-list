@@ -360,6 +360,12 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
               <span style="font-size:12px;color:#8a8a86;font-weight:600">선택자 명단</span>
               <button onClick="{{ p.copyAll }}" style="background:none;border:1px solid #d4d4d0;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:#171717;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">명단 전체 복사</button>
             </div>
+            <sc-if value="{{ p.listFail }}">
+              <div style="display:flex;align-items:center;gap:10px;border:1.5px solid #F5B800;border-radius:10px;padding:10px 13px;font-size:13px;color:#171717">
+                <span style="flex:1;word-break:keep-all">명단을 못 불러왔어요. 자료는 그대로 있어요.</span>
+                <button onClick="{{ p.retryList }}" style="flex:none;background:#fff;border:1px solid #d4d4d0;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:#171717;cursor:pointer;white-space:nowrap" style-hover="border-color:#171717">다시 불러오기</button>
+              </div>
+            </sc-if>
             <sc-for list="{{ p.claimGroups }}" as="g" hint-placeholder-count="1">
               <div style="border:1px solid #eeeeec;border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:9px">
                 <div style="display:flex;align-items:center;gap:8px">
@@ -766,7 +772,7 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showRemaining&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;설정&quot;}}">
 class Component extends DCLogic {
-  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'', snipOpen:false, snipNew:'', optPaste:{}, crop:null };
+  state = { view:'main', authed:false, adminTab:'products', editId:null, dirty:false, settingsDirty:false, editLang:'ko', pwEmail:'', pw:'', pwErr:'', products:[], settings:{title:'샘플 리스트',subtitle:'선착순으로 선택할 수 있어요. 원하는 옵션을 누르고 인스타그램 아이디를 남기면 확정됩니다.'}, ci:{}, urls:{}, lightbox:null, claiming:null, cname:'', cErr:'', cship:{}, copt:{}, csizes:[], uploading:null, ubuyer:'', usize:'', uother:'', uErr:'', ustage:[], uOver:0, uBig:0, umsg:'', utally:0, toast:'', viewer:'', vinput:'', vErr:'', showPending:false, lang:'ko', buyers:[], storBytes:null, gShow:{}, bNewId:'', bNewQty:1, bBulk:'', snipOpen:false, snipNew:'', optPaste:{}, crop:null, listFail:false };
   trGet(obj,lang,field){ if(!obj) return ''; if(lang==='ko') return obj[field]||''; const t=obj.tr&&obj.tr[lang]; return (t&&t[field]!=null&&String(t[field]).trim()!=='')?t[field]:(obj[field]||''); }
   setTr(id,lang,field,value){ this.upd(id,pp=>{ if(lang==='ko') return {[field]:value}; const tr={...(pp.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {tr}; }); }
   setSizeTr(id,i,lang,field,value){ this.upd(id,pp=>({sizes:pp.sizes.map((x,j)=>{ if(j!==i) return x; if(lang==='ko') return {...x,[field]:value}; const tr={...(x.tr||{})}; tr[lang]={...(tr[lang]||{}),[field]:value}; return {...x,tr}; })})); }
@@ -781,7 +787,7 @@ class Component extends DCLogic {
     const cmap={}; (counts||[]).forEach(c=>{ (cmap[c.product_id]=cmap[c.product_id]||{})[c.size_key]=c.claimed; });
     const smap={}; (subs||[]).forEach(s=>{ const k=s.product_id+'|'+s.size_key; (smap[k]=smap[k]||[]).push({ id:s.id, buyer:s.buyer, at:new Date(s.created_at).getTime(), ship:s.ship||{}, opt:s.opt||{} }); });
     const gmap={}, dmap={}; (phs||[]).forEach(g=>{ const obj={ key:g.id, url:this._photoUrl(g.path), buyer:g.buyer, size:g.size, msg:g.msg, name:g.filename, type:g.mime, bytes:g.bytes, at:new Date(g.created_at).getTime(), sent:g.sent, path:g.path, kind:g.kind||'item' }; if((g.kind||'item')==='draft') (dmap[g.product_id]=dmap[g.product_id]||[]).push(obj); else (gmap[g.product_id]=gmap[g.product_id]||[]).push(obj); });
-    return (rows||[]).map(r=>{ const p={ ...(r.doc||{}), id:r.id }; p.sizes=(p.sizes||[]).map(s=>{ const key=s.key; const real=smap[r.id+'|'+key]; const claimed=(cmap[r.id]||{})[key]||0; return { ...s, claims: real || Array.from({length:claimed},()=>({buyer:'',at:0,ship:{},opt:{}})) }; }); p.gallery=gmap[r.id]||[]; p.drafts=dmap[r.id]||[]; return p; });
+    return (rows||[]).map(r=>{ const p={ ...(r.doc||{}), id:r.id }; p.sizes=(p.sizes||[]).map(s=>{ const key=s.key; const real=smap[r.id+'|'+key]; const claimed=(cmap[r.id]||{})[key]||0; return { ...s, claims: real || Array.from({length:claimed},()=>({buyer:'',at:0,ship:{},opt:{},ghost:true})) }; }); p.gallery=gmap[r.id]||[]; p.drafts=dmap[r.id]||[]; return p; });
   }
   async _reload(force){
     const authed = force!=null ? force : this.state.authed;
@@ -792,8 +798,13 @@ class Component extends DCLogic {
         sb.from('size_counts').select('*'),
         sb.from('settings').select('*').eq('id',1).maybeSingle()
       ]);
-      let subs=null, phs=null, buyers=null, storBytes=null;
-      if(authed){ const [su,ph,bu,us]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}), sb.rpc('storage_usage') ]); subs=su.data; phs=ph.data; buyers=bu.data;
+      let subs=null, phs=null, buyers=null, storBytes=null, listFail=false;
+      if(authed){ let [su,ph,bu,us]=await Promise.all([ sb.from('submissions').select('*'), sb.from('photos').select('*').order('created_at',{ascending:true}), sb.from('buyers').select('*').order('created_at',{ascending:false}), sb.rpc('storage_usage') ]);
+        // 명단을 못 받아 오면(로그인이 낡음 등) 로그인을 새로 잡고 한 번 더 받는다 — 「(아이디 미입력)」 빈 줄로 보이지 않게 (2026-10-22).
+        const claimedN=(ct.data||[]).reduce((n,c)=>n+(c.claimed|0),0);
+        if(su.error || (claimedN>0 && !(su.data||[]).length)){ try{ await sb.auth.refreshSession(); }catch(e){} su=await sb.from('submissions').select('*'); }
+        listFail = !!su.error || (claimedN>0 && !(su.data||[]).length);
+        subs=su.data; phs=ph.data; buyers=bu.data;
         // 저장소 사용량 — 마이그레이션(storage_usage 함수) 전이면 조용히 표시 생략
         if(us && !us.error && us.data!=null) storBytes=Number(us.data);
         // 비공개 보관함: 로그인한 관리자에게만 서명주소(8시간짜리 임시 열람권)를 일괄 발급한다.
@@ -812,7 +823,7 @@ class Component extends DCLogic {
       if(se.data && this.state.adminTab!=='settings' && !this.state.settingsDirty){ const { admin_ids, ...s }=se.data; patch.settings={ ...this.state.settings, ...s, adminIds:admin_ids||'' }; }
       // buyers 목록: 아이디 수량관리 탭에서 입력 중(persist 대기)일 땐 서버값으로 덮어쓰지 않는다.
       if(buyers && !this.__bpPending){ patch.buyers=buyers; }
-      if(authed){ patch.storBytes=storBytes; }
+      if(authed){ patch.storBytes=storBytes; patch.listFail=listFail; }
       this.setState(patch);
     }catch(e){ console.error('reload', e); }
   }
@@ -1021,7 +1032,7 @@ class Component extends DCLogic {
     const isI=b=>/^@|^[a-z0-9._]+$/i.test((b||'').trim());
     const optLineOf=cl=>optLabels.map(lb=>{ const v=((cl.opt||{})[lb]||'').trim(); return v?lb+':'+v:null; }).filter(Boolean).join(' / ');
     const m=new Map();
-    (p.sizes||[]).forEach((s,si)=>(s.claims||[]).forEach((cl,ci)=>{ const key=(cl.buyer||'').trim().toLowerCase()||'__none__'; if(!m.has(key)) m.set(key,{buyer:cl.buyer||'',rows:[]}); m.get(key).rows.push({cl,si,ci,size:s.label||'옵션'}); }));
+    (p.sizes||[]).forEach((s,si)=>(s.claims||[]).forEach((cl,ci)=>{ if(cl.ghost) return; const key=(cl.buyer||'').trim().toLowerCase()||'__none__'; if(!m.has(key)) m.set(key,{buyer:cl.buyer||'',rows:[]}); m.get(key).rows.push({cl,si,ci,size:s.label||'옵션'}); }));
     return [...m.values()].map(grp=>{
       const rows=grp.rows.slice().sort((a,b)=>a.cl.at-b.cl.at);
       const shipVals=shipLabels.map(lb=>{ let v=''; for(let k=rows.length-1;k>=0;k--){ const val=((rows[k].cl.ship||{})[lb]||'').trim(); if(val){ v=val; break; } } return v?lb+': '+v:null; }).filter(Boolean);
@@ -1176,6 +1187,8 @@ class Component extends DCLogic {
         openCrop:()=>{ if(!(p.sizes||[]).length){ this.flash('옵션을 먼저 넣어 주세요'); return; } this.setState({crop:{pid:p.id,src:'',iw:0,ih:0,boxes:[]}}); },
         hasClaims:(p.sizes||[]).some(s=>(s.claims||[]).length>0),
         claimGroups:this.buildClaimGroups(p),
+        listFail:!!st.listFail&&(p.sizes||[]).some(s=>(s.claims||[]).some(c=>c.ghost)),
+        retryList:async()=>{ try{ await this._sb().auth.refreshSession(); }catch(e){} await this._reload(); if(this.state.listFail) this.flash('명단을 못 불러왔어요 — 로그아웃 후 다시 로그인해 주세요'); },
         copyAll:()=>{ const gs=this.buildClaimGroups(p); if(!gs.length){ this.flash('명단이 비어 있습니다'); return; } this.copyToClip(gs.map(g=>g._text()).join('\n\n')); },
         save:()=>this.commitEdits(true), dirty:st.dirty };
     });
