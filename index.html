@@ -271,11 +271,25 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
             <span style="font-size:11.5px;color:#8a8a86;font-weight:600">옵션마다 적는 칸 <span style="color:#b3b3af;font-weight:400">· 옵션을 2개 고르면 2번 적어요 (예: 앞면 문구)</span></span>
             <sc-for list="{{ p.optFields }}" as="f" hint-placeholder-count="0">
               <div style="display:flex;gap:8px;align-items:center">
-                <input value="{{ f.label }}" onChange="{{ f.setLabel }}" placeholder="예: 앞면 문구 / 뒷면 문구 / 고리 컬러" style="flex:1;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
+                <input value="{{ f.label }}" onChange="{{ f.setLabel }}" placeholder="예: 앞면 문구 / 뒷면 문구" style="flex:1;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
                 <button onClick="{{ f.del }}" style="background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px" style-hover="color:#171717">✕</button>
               </div>
             </sc-for>
             <button onClick="{{ p.addOptField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 옵션마다 적는 칸 추가</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;border-top:1px solid #eeeeec;padding-top:14px">
+            <span style="font-size:11.5px;color:#8a8a86;font-weight:600">꼭 고르는 옵션 <span style="color:#b3b3af;font-weight:400">· 손님이 버튼 중 하나를 꼭 골라야 신청돼요 (옵션마다)</span></span>
+            <sc-if value="{{ p.hasPickFields }}">
+              <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:#b3b3af;font-weight:600;padding:0 2px"><span style="width:150px;flex:none">이름</span><span style="flex:1">고를 것 (쉼표로 나눠요)</span><span style="width:22px"></span></div>
+            </sc-if>
+            <sc-for list="{{ p.pickFields }}" as="f" hint-placeholder-count="0">
+              <div style="display:flex;gap:8px;align-items:center">
+                <input value="{{ f.label }}" onChange="{{ f.setLabel }}" placeholder="예: 고리컬러" style="width:150px;flex:none;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
+                <input value="{{ f.choices }}" onChange="{{ f.setChoices }}" placeholder="예: 골드, 실버" style="flex:1;min-width:0;border:1px solid #d4d4d0;border-radius:9px;padding:9px 12px;font-size:13px;outline:none" style-focus="border-color:#171717">
+                <button onClick="{{ f.del }}" style="width:22px;background:none;border:none;color:#b3b3af;cursor:pointer;font-size:14px;padding:4px 0" style-hover="color:#171717">✕</button>
+              </div>
+            </sc-for>
+            <button onClick="{{ p.addPickField }}" style="align-self:flex-start;background:none;border:1px dashed #d4d4d0;border-radius:9px;padding:7px 13px;font-size:12px;color:#8a8a86;cursor:pointer" style-hover="border-color:#171717;color:#171717">+ 꼭 고르는 옵션 추가</button>
           </div>
         </div>
         <textarea value="{{ p.guide }}" onChange="{{ p.setGuide }}" placeholder="{{ p.guidePh }}" rows="2" style="border:1px solid #d4d4d0;border-radius:9px;padding:11px 12px;font-size:13.5px;line-height:1.6;resize:vertical;outline:none" style-focus="border-color:#171717"></textarea>
@@ -609,7 +623,8 @@ input,textarea,button{font-family:'IBM Plex Sans KR',sans-serif}
                 <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="0">
                   <div style="display:flex;flex-direction:column;gap:4px">
                     <span style="font-size:11.5px;color:#8a8a86">{{ f.label }}</span>
-                    <input value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.label }} 입력" style="border:1px solid #d4d4d0;border-radius:9px;padding:10px 12px;font-size:13.5px;outline:none" style-focus="border-color:#171717">
+                    <sc-if value="{{ f.isText }}"><input value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.label }} 입력" style="border:1px solid #d4d4d0;border-radius:9px;padding:10px 12px;font-size:13.5px;outline:none" style-focus="border-color:#171717"></sc-if>
+                    <sc-if value="{{ f.isPick }}"><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ f.chips }}" as="ch" hint-placeholder-count="2"><button onClick="{{ ch.select }}" style="{{ ch.style }}">{{ ch.label }}</button></sc-for></div></sc-if>
                   </div>
                 </sc-for>
               </div>
@@ -824,6 +839,7 @@ class Component extends DCLogic {
   _flush(){ clearTimeout(this.__ps); const rows=(this.state.products||[]).map((p,i)=>({ id:p.id, doc:this._docOf(p), sort:i })); if(rows.length) this._sb().from('products').upsert(rows).then(({error})=>{ if(error) this.flash('저장 실패: '+error.message); }); }
   commitEdits(toast,msg){ this._flush(); this.setState({dirty:false}); if(msg) this.flash(msg); else if(toast) this.flash('저장되었습니다'); }
   // 자주 쓰는 글 — settings.tr.__snippets 에 둔다(새 열 없이 두 PC 공용). 언어 키(en·tw·jp)와 안 겹친다.
+  pickChoices(f){ return String((f&&f.choices)||'').split(/[,，\/\n]/).map(x=>x.trim()).filter(Boolean); }
   snippets(){ const a=((this.state.settings||{}).tr||{}).__snippets; return Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.trim()):[]; }
   saveSnippets(list){ const tr={...((this.state.settings||{}).tr||{}),__snippets:list}; this.setState(s=>({settings:{...s.settings,tr}})); this._sb().from('settings').update({tr}).eq('id',1).then(({error})=>{ this.flash(error?('자주 쓰는 글 저장 실패: '+error.message):'자주 쓰는 글을 저장했어요'); }); }
   // 옵션 붙여넣기 — 「1. 하트 2. 오리 3. 리본」 한 줄, 줄바꿈, 쉼표, ①② 모두 나눈다. 끝에 x3·×3·*3·3개 → 수량.
@@ -1091,8 +1107,15 @@ class Component extends DCLogic {
         copyForm:p.copyForm||'', setCopyForm:e=>this.upd(p.id,{copyForm:e.target.value}),
         shipFields:(p.shipFields||[]).map((f,i)=>({ label:f.label||'', setLabel:e=>this.upd(p.id,pp=>({shipFields:(pp.shipFields||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})), del:()=>this.upd(p.id,pp=>({shipFields:(pp.shipFields||[]).filter((_,j)=>j!==i)})) })),
         addShipField:()=>this.upd(p.id,pp=>({shipFields:[...(pp.shipFields||[]),{label:''}]})),
-        optFields:(p.optFields||[]).map((f,i)=>({ label:f.label||'', setLabel:e=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})), del:()=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).filter((_,j)=>j!==i)})) })),
+        // optFields 한 배열에 두 종류: 글자 칸 {label} · 꼭 고르는 옵션 {label, pick:true, choices:'골드, 실버'} — 손님 값은 둘 다 opt[옵션][label] 에 저장된다.
+        optFields:(p.optFields||[]).map((f,i)=>({f,i})).filter(x=>!x.f.pick).map(({f,i})=>({ label:f.label||'', setLabel:e=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})), del:()=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).filter((_,j)=>j!==i)})) })),
         addOptField:()=>this.upd(p.id,pp=>({optFields:[...(pp.optFields||[]),{label:''}]})),
+        pickFields:(p.optFields||[]).map((f,i)=>({f,i})).filter(x=>x.f.pick).map(({f,i})=>({ label:f.label||'', choices:f.choices||'',
+          setLabel:e=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})),
+          setChoices:e=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).map((x,j)=>j===i?{...x,choices:e.target.value}:x)})),
+          del:()=>this.upd(p.id,pp=>({optFields:(pp.optFields||[]).filter((_,j)=>j!==i)})) })),
+        hasPickFields:(p.optFields||[]).some(f=>f.pick),
+        addPickField:()=>this.upd(p.id,pp=>({optFields:[...(pp.optFields||[]),{label:'',pick:true,choices:''}]})),
         guide: el==='ko'?(p.guide||''):((p.tr&&p.tr[el]&&p.tr[el].guide)||''),
         guidePh: el==='ko'?'고객 안내문 — 선택 창 하단에 표시됩니다 (복사 불가)':((p.guide||'고객 안내문')+' · 원문'),
         setGuide:e=>this.setTr(p.id,el,'guide',e.target.value),
@@ -1199,6 +1222,8 @@ class Component extends DCLogic {
       const lim=this.limitFor(p,name);
       const mine=(p.sizes||[]).reduce((n,x)=>n+(x.claims||[]).filter(cl=>cl.buyer.trim().toLowerCase()===name.toLowerCase()).length,0);
       if(mine+picks.length>lim){ this.setState({cErr:L.cErrLimit(mine,lim)}); return; }
+      // 꼭 고르는 옵션 — 고른 옵션마다 하나씩 골라야 신청된다.
+      for(const lb of picks){ for(const fd of (p.optFields||[]).filter(f=>f.pick&&f.label&&f.label.trim()&&this.pickChoices(f).length>1)){ if(!(((this.state.copt||{})[lb]||{})[fd.label]||'').trim()){ const lg=this.state.lang; const n=fd.label; this.setState({cErr:lg==='en'?('Please choose '+n+(picks.length>1?' for '+lb:'')):lg==='zh'?('请选择'+n):lg==='tw'?('請選擇'+n):('‘'+n+'’을(를) 골라주세요'+(picks.length>1?' ('+lb+')':''))}); return; } } }
       const shipLabels=(p.shipFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
       const optLabels=(p.optFields||[]).map(f=>f.label).filter(l=>l&&l.trim());
       const ship={}; shipLabels.forEach(lb=>{ const v=((this.state.cship||{})[lb]||'').trim(); if(v) ship[lb]=v; });
@@ -1207,7 +1232,7 @@ class Component extends DCLogic {
         let ok=0, failMsg='';
         for(const lb of picks){
           const s=(p.sizes||[]).find(x=>(x.label||'옵션')===lb); if(!s||!s.key){ failMsg=L.cErrJustClosed(lb); break; }
-          const opt={}; optLabels.forEach(fl=>{ const v=(((this.state.copt||{})[lb]||{})[fl]||'').trim(); if(v) opt[fl]=v; });
+          const opt={}; optLabels.forEach(fl=>{ let v=(((this.state.copt||{})[lb]||{})[fl]||'').trim(); if(!v){ const fd=(p.optFields||[]).find(f=>f.pick&&f.label===fl); const ch=fd?this.pickChoices(fd):[]; if(ch.length===1) v=ch[0]; } if(v) opt[fl]=v; });
           const { error }=await sb.rpc('claim',{ p_product_id:p.id, p_size_key:s.key, p_buyer:name, p_opt:opt, p_ship:ship });
           if(error){ const m=error.message||''; failMsg = m.indexOf('NOT_INVITED')>=0?L.vErrNotInvited:(m.indexOf('LIMIT')>=0?L.cErrDone:(m.indexOf('SOLD_OUT')>=0?L.cErrJustClosed(lb):L.cErrClosed)); break; }
           ok++;
@@ -1250,8 +1275,13 @@ class Component extends DCLogic {
       const offDis={...offChip,background:'#f0f0ee',color:'#b3b3af',borderColor:'#e3e3e0',cursor:'default'};
       claimSizeOptions=((p&&p.sizes)||[]).map(s=>{ const lb=s.label||'옵션'; const disp=this.trGet(s,st.lang,'label')||lb; const rem=Math.max(0,(s.qty|0)-(s.claims||[]).length); const sel=picks.includes(lb); const out=rem<=0||closedP; return { label:disp, selected:sel, disabled:out&&!sel, style:sel?selChip:(out?offDis:offChip), subColor:sel?'rgba(255,255,255,.8)':(out?'#b3b3af':'#8a8a86'), remainText:out?L.closedShort:(showRemaining?L.left(rem):''), toggle:()=>this.setState(s0=>{ const cur=s0.csizes||[]; const has=cur.includes(lb); return {csizes:has?cur.filter(x=>x!==lb):[...cur,lb],cErr:''}; }) }; });
       claimShipFields=((p&&p.shipFields)||[]).filter(f=>f.label&&f.label.trim()).map(f=>({label:f.label,value:(st.cship||{})[f.label]||'',set:e=>{const v=e.target.value;this.setState(s=>({cship:{...s.cship,[f.label]:v}}));}}));
-      const optLabels=((p&&p.optFields)||[]).filter(f=>f.label&&f.label.trim()).map(f=>f.label);
-      claimOptGroups=picks.map(lb=>({ label:lb, title:claimMulti?(lb+' · 옵션 정보'):'옵션 정보', fields:optLabels.map(fl=>({label:fl,value:((st.copt||{})[lb]||{})[fl]||'',set:e=>{const v=e.target.value;this.setState(s=>({copt:{...s.copt,[lb]:{...((s.copt||{})[lb]||{}),[fl]:v}}}));}})) })).filter(g=>g.fields.length>0);
+      const optDefs=((p&&p.optFields)||[]).filter(f=>f.label&&f.label.trim());
+      const chipOn='background:#171717;color:#fff;border:1px solid #171717;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+      const chipOff='background:#fff;color:#171717;border:1px solid #d4d4d0;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+      claimOptGroups=picks.map(lb=>({ label:lb, title:claimMulti?(lb+' · 옵션 정보'):'옵션 정보', fields:optDefs.map(fd=>{ const fl=fd.label; const cur=((st.copt||{})[lb]||{})[fl]||''; const setV=v=>this.setState(s=>({copt:{...s.copt,[lb]:{...((s.copt||{})[lb]||{}),[fl]:v}},cErr:''}));
+        const choices=fd.pick?this.pickChoices(fd):[]; const curShown=cur||(choices.length===1?choices[0]:'');
+        return {label:fd.pick?(fl+' *'):fl, isPick:!!fd.pick, isText:!fd.pick, value:cur, set:e=>setV(e.target.value),
+          chips:choices.map(ch=>({label:ch, style:curShown===ch?chipOn:chipOff, select:()=>setV(ch)}))}; }) })).filter(g=>g.fields.length>0);
     }
     const copyClaim=()=>{ const t=copyText; const done=()=>this.flash('복사되었습니다'); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,done); else done(); };
 
@@ -1481,7 +1511,7 @@ class Component extends DCLogic {
       pw:st.pw, setPw:e=>this.setState({pw:e.target.value,pwErr:''}), pwKey:e=>{ if(e.key==='Enter') login(); }, login,
       pwErr:st.pwErr, hasPwErr:!!st.pwErr,
       cards, hasCards:cards.length>0, noCards:cards.length===0,
-      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],shipFields:[{label:'성함'},{label:'연락처'},{label:'주소'}],optFields:[{label:'앞면문구'},{label:'뒷면문구'},{label:'고리컬러(골드 또는 실버 중 1택)'}],deadline:'',perPerson:1,closed:false,draft:true},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
+      adminCards, addProduct:()=>{ const id='p'+Date.now(); this.setState({products:[{id,name:'',desc:'',copyForm:'',images:[],sizes:[{key:this._k(),label:'FREE',qty:1,claims:[]}],shipFields:[{label:'성함'},{label:'연락처'},{label:'주소'}],optFields:[{label:'앞면문구'},{label:'뒷면문구'},{label:'고리컬러',pick:true,choices:'실버, 골드'},{label:'크기',pick:true,choices:'기본사이즈'}],deadline:'',perPerson:1,closed:false,draft:true},...this.state.products],adminTab:'products',editId:id,dirty:true}); },
       adminTab:st.adminTab,
       tabToProducts:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'products',editId:null}); },
       tabToGallery:()=>{ if(this.state.dirty) this.commitEdits(false); this.setState({adminTab:'gallery',editId:null}); },
